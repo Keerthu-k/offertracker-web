@@ -1,0 +1,114 @@
+.resumes-page {
+    max-width: 1200px;
+}
+
+.resumes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-md);
+}
+
+.resume-card {
+    padding: var(--space-lg);
+    animation: fadeInUp 0.4s ease backwards;
+    position: relative;
+}
+
+.resume-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-md);
+}
+
+.resume-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: rgba(124, 58, 237, 0.1);
+    color: var(--accent-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.resume-edit-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    color: var(--text-tertiary);
+    transition: all var(--transition-fast);
+    opacity: 0;
+}
+
+.resume-card:hover .resume-edit-btn {
+    opacity: 1;
+}
+
+.resume-edit-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary);
+}
+
+.resume-name {
+    font-size: var(--font-md);
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+}
+
+.resume-notes {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-md);
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.resume-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+}
+
+.resume-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--font-xs);
+    color: var(--text-tertiary);
+}
+
+.resume-file-link {
+    color: var(--accent-secondary);
+    transition: color var(--transition-fast);
+}
+
+.resume-file-link:hover {
+    color: var(--accent-primary);
+}
+
+/* Edit mode */
+.resume-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.resume-edit-actions {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+    .resumes-grid {
+        grid-template-columns: 1fr;
+    }
+}
