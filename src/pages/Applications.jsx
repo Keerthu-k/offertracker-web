@@ -8,11 +8,14 @@ import {
     Calendar,
     ExternalLink,
     Filter,
+    LayoutGrid,
+    Columns3,
 } from 'lucide-react';
-import { getApplications, createApplication, getResumes } from '../services/api';
+import { getApplications, createApplication, updateApplication, getResumes } from '../services/api';
 import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';
 import EmptyState from '../components/EmptyState';
+import KanbanBoard from '../components/KanbanBoard';
 import { showToast } from '../components/Toast';
 
 const STATUS_OPTIONS = [
@@ -46,6 +49,7 @@ export default function Applications() {
     const [statusFilter, setStatusFilter] = useState('All');
     const [formData, setFormData] = useState(INITIAL_FORM);
     const [submitting, setSubmitting] = useState(false);
+    const [viewMode, setViewMode] = useState('kanban');
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -91,6 +95,22 @@ export default function Applications() {
             app.status?.toLowerCase() === statusFilter.toLowerCase();
         return matchSearch && matchStatus;
     });
+
+    /* ── Kanban drag-to-change-status handler ───────────── */
+    async function handleStatusChange(appId, newStatus) {
+        // Optimistically update local state
+        setApplications((prev) =>
+            prev.map((a) => (a.id === appId ? { ...a, status: newStatus } : a)),
+        );
+        try {
+            await updateApplication(appId, { status: newStatus });
+            showToast(`Moved to ${newStatus}`);
+        } catch (err) {
+            // Revert on failure
+            loadData();
+            showToast(err.message || 'Failed to update status', 'error');
+        }
+    }
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -145,10 +165,31 @@ export default function Applications() {
                         {applications.length} application{applications.length !== 1 ? 's' : ''} tracked
                     </p>
                 </div>
-                <button className="btn-primary text-sm" onClick={() => setShowForm(true)}>
-                    <Plus size={16} />
-                    New Application
-                </button>
+                <div className="flex items-center gap-3">
+                    {/* View toggle */}
+                    <div className="view-toggle">
+                        <button
+                            className={`view-toggle-btn ${viewMode === 'kanban' ? 'view-toggle-btn--active' : ''}`}
+                            onClick={() => setViewMode('kanban')}
+                            title="Kanban board"
+                        >
+                            <Columns3 size={14} />
+                            Board
+                        </button>
+                        <button
+                            className={`view-toggle-btn ${viewMode === 'grid' ? 'view-toggle-btn--active' : ''}`}
+                            onClick={() => setViewMode('grid')}
+                            title="Grid view"
+                        >
+                            <LayoutGrid size={14} />
+                            Grid
+                        </button>
+                    </div>
+                    <button className="btn-primary text-sm" onClick={() => setShowForm(true)}>
+                        <Plus size={16} />
+                        New Application
+                    </button>
+                </div>
             </div>
 
             {/* Toolbar */}
@@ -164,87 +205,108 @@ export default function Applications() {
                             className="!pl-10 !bg-white !border-slate-200"
                         />
                     </div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <Filter size={14} className="text-slate-400 shrink-0" />
-                        {STATUS_OPTIONS.map((status) => (
-                            <button
-                                key={status}
-                                className={`px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap ${
-                                    statusFilter === status
-                                        ? 'bg-indigo-50 border-indigo-200 text-indigo-600'
-                                        : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                                }`}
-                                onClick={() => setStatusFilter(status)}
-                            >
-                                {status}
-                            </button>
-                        ))}
-                    </div>
+                    {viewMode === 'grid' && (
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <Filter size={14} className="text-slate-400 shrink-0" />
+                            {STATUS_OPTIONS.map((status) => (
+                                <button
+                                    key={status}
+                                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap ${
+                                        statusFilter === status
+                                            ? 'bg-indigo-50 border-indigo-200 text-indigo-600'
+                                            : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700'
+                                    }`}
+                                    onClick={() => setStatusFilter(status)}
+                                >
+                                    {status}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
-            {/* Cards Grid */}
-            {filtered.length > 0 ? (
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
-                    {filtered.map((app, index) => (
-                        <div
-                            key={app.id}
-                            className="bg-white rounded-2xl border border-slate-200/80 p-5 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group animate-[fadeInUp_0.4s_ease_backwards]"
-                            onClick={() => navigate(`/applications/${app.id}`)}
-                            style={{ animationDelay: `${index * 0.04}s` }}
-                        >
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-base">
-                                    {app.company_name?.charAt(0)?.toUpperCase()}
-                                </div>
-                                <StatusBadge status={app.status} />
-                            </div>
-                            <div className="mb-3">
-                                <h3 className="text-base font-bold text-slate-900 tracking-tight mb-0.5">{app.company_name}</h3>
-                                <p className="text-sm text-slate-500">{app.role_title}</p>
-                            </div>
-                            <div className="flex flex-wrap gap-3">
-                                {app.applied_date && (
-                                    <span className="flex items-center gap-1 text-xs text-slate-400">
-                                        <Calendar size={12} />
-                                        {formatDate(app.applied_date)}
-                                    </span>
-                                )}
-                                {app.applied_source && (
-                                    <span className="flex items-center gap-1 text-xs text-slate-400">
-                                        <MapPin size={12} />
-                                        {app.applied_source}
-                                    </span>
-                                )}
-                                {app.url && (
-                                    <span className="flex items-center gap-1 text-xs text-slate-400">
-                                        <ExternalLink size={12} />
-                                        Link
-                                    </span>
-                                )}
-                            </div>
-                            {app.stages?.length > 0 && (
-                                <div className="pt-3 mt-3 border-t border-slate-100">
-                                    <span className="text-xs text-slate-400 font-medium">
-                                        {app.stages.length} stage{app.stages.length !== 1 ? 's' : ''}
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            ) : applications.length > 0 ? (
-                <EmptyState
-                    icon={Search}
-                    title="No matches found"
-                    description="Try adjusting your search or filter to find what you're looking for."
-                />
+            {/* Kanban View */}
+            {viewMode === 'kanban' ? (
+                applications.length > 0 ? (
+                    <KanbanBoard
+                        applications={applications}
+                        onStatusChange={handleStatusChange}
+                        search={search}
+                    />
+                ) : (
+                    <EmptyState
+                        icon={Briefcase}
+                        title="No applications yet"
+                        description='Click "New Application" above to start tracking your job search.'
+                    />
+                )
             ) : (
-                <EmptyState
-                    icon={Briefcase}
-                    title="No applications yet"
-                    description='Click "New Application" above to start tracking your job search.'
-                />
+                /* Grid View */
+                <>
+                    {filtered.length > 0 ? (
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
+                            {filtered.map((app, index) => (
+                                <div
+                                    key={app.id}
+                                    className="bg-white rounded-2xl border border-slate-200/80 p-5 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group animate-[fadeInUp_0.4s_ease_backwards]"
+                                    onClick={() => navigate(`/applications/${app.id}`)}
+                                    style={{ animationDelay: `${index * 0.04}s` }}
+                                >
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-base">
+                                            {app.company_name?.charAt(0)?.toUpperCase()}
+                                        </div>
+                                        <StatusBadge status={app.status} />
+                                    </div>
+                                    <div className="mb-3">
+                                        <h3 className="text-base font-bold text-slate-900 tracking-tight mb-0.5">{app.company_name}</h3>
+                                        <p className="text-sm text-slate-500">{app.role_title}</p>
+                                    </div>
+                                    <div className="flex flex-wrap gap-3">
+                                        {app.applied_date && (
+                                            <span className="flex items-center gap-1 text-xs text-slate-400">
+                                                <Calendar size={12} />
+                                                {formatDate(app.applied_date)}
+                                            </span>
+                                        )}
+                                        {app.applied_source && (
+                                            <span className="flex items-center gap-1 text-xs text-slate-400">
+                                                <MapPin size={12} />
+                                                {app.applied_source}
+                                            </span>
+                                        )}
+                                        {app.url && (
+                                            <span className="flex items-center gap-1 text-xs text-slate-400">
+                                                <ExternalLink size={12} />
+                                                Link
+                                            </span>
+                                        )}
+                                    </div>
+                                    {app.stages?.length > 0 && (
+                                        <div className="pt-3 mt-3 border-t border-slate-100">
+                                            <span className="text-xs text-slate-400 font-medium">
+                                                {app.stages.length} stage{app.stages.length !== 1 ? 's' : ''}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    ) : applications.length > 0 ? (
+                        <EmptyState
+                            icon={Search}
+                            title="No matches found"
+                            description="Try adjusting your search or filter to find what you're looking for."
+                        />
+                    ) : (
+                        <EmptyState
+                            icon={Briefcase}
+                            title="No applications yet"
+                            description='Click "New Application" above to start tracking your job search.'
+                        />
+                    )}
+                </>
             )}
 
             {/* New Application Modal */}

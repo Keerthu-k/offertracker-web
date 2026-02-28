@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { getApplications } from '../services/api';
 import StatusBadge from '../components/StatusBadge';
+import SankeyChart from '../components/SankeyChart';
 
 export default function Dashboard() {
     const [applications, setApplications] = useState([]);
@@ -136,13 +137,23 @@ export default function Dashboard() {
                 ))}
             </div>
 
-            {/* Two-column: Pipeline + Recent */}
+            {/* Application Flow (Sankey) */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 mb-4 animate-[fadeInUp_0.5s_ease_backwards] [animation-delay:0.2s]">
+                <h2 className="text-sm font-semibold text-slate-800 flex items-center gap-2 mb-2">
+                    <TrendingUp size={16} className="text-slate-400" />
+                    Application Flow
+                </h2>
+                <p className="text-xs text-slate-400 mb-4">How your applications progress through stages</p>
+                <SankeyChart applications={applications} />
+            </div>
+
+            {/* Two-column: Pipeline breakdown + Recent */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Application Pipeline */}
-                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 animate-[fadeInUp_0.5s_ease_backwards] [animation-delay:0.2s]">
+                {/* Pipeline Breakdown */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 animate-[fadeInUp_0.5s_ease_backwards] [animation-delay:0.25s]">
                     <h2 className="text-sm font-semibold text-slate-800 flex items-center gap-2 mb-5">
-                        <TrendingUp size={16} className="text-slate-400" />
-                        Pipeline
+                        <Target size={16} className="text-slate-400" />
+                        Status Breakdown
                     </h2>
                     <div className="space-y-4">
                         {Object.entries(statusCounts)
