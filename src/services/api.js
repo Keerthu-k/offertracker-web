@@ -47,12 +47,6 @@ async function request(url, options = {}) {
 
   const response = await fetch(`${API_BASE}${url}`, config);
 
-  if (response.status === 401) {
-    clearToken();
-    window.location.href = '/login';
-    throw new Error('Session expired');
-  }
-
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     const message =

@@ -12,6 +12,28 @@ import {
 
 const AuthContext = createContext(null);
 
+function normalizeAuthPayload(payload) {
+  const accessToken =
+    payload?.access_token ??
+    payload?.accessToken ??
+    payload?.token ??
+    payload?.data?.access_token ??
+    payload?.data?.accessToken ??
+    payload?.data?.token ??
+    null;
+
+  const user = payload?.user ?? payload?.data?.user ?? null;
+
+  if (!accessToken) {
+    throw new Error('Login succeeded but no access token was returned.');
+  }
+  if (!user) {
+    throw new Error('Login succeeded but no user profile was returned.');
+  }
+
+  return { accessToken, user };
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(getStoredUser);
   const [loading, setLoading] = useState(!!getToken());
@@ -34,18 +56,20 @@ export function AuthProvider({ children }) {
 
   const loginFn = useCallback(async (email, password) => {
     const res = await authLogin({ email, password });
-    setToken(res.access_token);
-    setStoredUser(res.user);
-    setUser(res.user);
-    return res.user;
+    const { accessToken, user } = normalizeAuthPayload(res);
+    setToken(accessToken);
+    setStoredUser(user);
+    setUser(user);
+    return user;
   }, []);
 
   const registerFn = useCallback(async ({ email, username, password, display_name }) => {
     const res = await authRegister({ email, username, password, display_name });
-    setToken(res.access_token);
-    setStoredUser(res.user);
-    setUser(res.user);
-    return res.user;
+    const { accessToken, user } = normalizeAuthPayload(res);
+    setToken(accessToken);
+    setStoredUser(user);
+    setUser(user);
+    return user;
   }, []);
 
   const logout = useCallback(() => {
