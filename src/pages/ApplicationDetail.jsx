@@ -16,13 +16,23 @@ import {
     TrendingUp,
     Clock,
     FileText,
+    Trash2,
+    Tag,
+    DollarSign,
+    X,
 } from 'lucide-react';
 import {
     getApplication,
     updateApplication,
+    deleteApplication,
     addStage,
-    setOutcome,
-    addReflection,
+    deleteStage,
+    createOutcome,
+    createReflection,
+    getApplicationTags,
+    getTags,
+    assignTag,
+    removeTag,
 } from '../services/api';
 import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';
@@ -49,14 +59,25 @@ export default function ApplicationDetail() {
     });
     const [submitting, setSubmitting] = useState(false);
 
+    // Tags state
+    const [appTags, setAppTags] = useState([]);
+    const [allTags, setAllTags] = useState([]);
+    const [showTagDropdown, setShowTagDropdown] = useState(false);
+
     useEffect(() => {
         loadApplication();
     }, [id]);
 
     async function loadApplication() {
         try {
-            const data = await getApplication(id);
+            const [data, tags, at] = await Promise.all([
+                getApplication(id),
+                getTags().catch(() => []),
+                getApplicationTags(id).catch(() => []),
+            ]);
             setApp(data);
+            setAllTags(tags);
+            setAppTags(at);
             setEditForm({
                 company_name: data.company_name || '',
                 role_title: data.role_title || '',
@@ -65,12 +86,51 @@ export default function ApplicationDetail() {
                 description: data.description || '',
                 status: data.status || 'Applied',
                 applied_date: data.applied_date?.split('T')[0] || '',
+                salary_min: data.salary_min || '',
+                salary_max: data.salary_max || '',
             });
         } catch {
             showToast('Failed to load application', 'error');
         } finally {
             setLoading(false);
         }
+    }
+
+    async function handleDelete() {
+        if (!confirm('Are you sure you want to delete this application? This cannot be undone.')) return;
+        try {
+            await deleteApplication(id);
+            showToast('Application deleted');
+            navigate('/applications');
+        } catch (err) {
+            showToast(err.message || 'Delete failed', 'error');
+        }
+    }
+
+    async function handleDeleteStage(stageId) {
+        if (!confirm('Delete this stage?')) return;
+        try {
+            await deleteStage(id, stageId);
+            showToast('Stage deleted');
+            loadApplication();
+        } catch (err) { showToast(err.message || 'Failed', 'error'); }
+    }
+
+    async function handleAssignTag(tagId) {
+        try {
+            await assignTag(id, tagId);
+            setShowTagDropdown(false);
+            const at = await getApplicationTags(id).catch(() => []);
+            setAppTags(at);
+        } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    async function handleRemoveTag(tagId) {
+        try {
+            await removeTag(id, tagId);
+            const at = await getApplicationTags(id).catch(() => []);
+            setAppTags(at);
+        } catch (err) { showToast(err.message, 'error'); }
     }
 
     async function handleEditSubmit(e) {
@@ -82,6 +142,10 @@ export default function ApplicationDetail() {
             if (!payload.url) payload.url = null;
             if (!payload.description) payload.description = null;
             if (!payload.applied_date) payload.applied_date = null;
+            if (payload.salary_min) payload.salary_min = Number(payload.salary_min);
+            else delete payload.salary_min;
+            if (payload.salary_max) payload.salary_max = Number(payload.salary_max);
+            else delete payload.salary_max;
             await updateApplication(id, payload);
             showToast('Application updated!');
             setShowEditModal(false);
@@ -120,7 +184,7 @@ export default function ApplicationDetail() {
             const payload = { ...outcomeForm };
             if (!payload.rejection_reason) delete payload.rejection_reason;
             if (!payload.notes) delete payload.notes;
-            await setOutcome(id, payload);
+            await createOutcome(id, payload);
             showToast('Outcome recorded!');
             setShowOutcomeModal(false);
             loadApplication();
@@ -140,7 +204,7 @@ export default function ApplicationDetail() {
             if (!payload.what_failed) delete payload.what_failed;
             if (!payload.skill_gaps) delete payload.skill_gaps;
             if (!payload.improvement_plan) delete payload.improvement_plan;
-            await addReflection(id, payload);
+            await createReflection(id, payload);
             showToast('Reflection saved!');
             setShowReflectionModal(false);
             loadApplication();
@@ -220,8 +284,45 @@ export default function ApplicationDetail() {
                     <button className="btn-secondary btn-sm" onClick={() => setShowEditModal(true)}>
                         <Edit3 size={14} /> Edit
                     </button>
+                    <button className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors" onClick={handleDelete} title="Delete application">
+                        <Trash2 size={16} />
+                    </button>
                 </div>
             </div>
+
+            {/* Tags */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 px-6 py-4 mb-5 flex items-center gap-2 flex-wrap">
+                <Tag size={14} className="text-slate-400 shrink-0" />
+                {appTags.map((t) => (
+                    <span key={t.tag_id || t.id} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-200">
+                        {t.tag_name || t.name}
+                        <button onClick={() => handleRemoveTag(t.tag_id || t.id)} className="text-indigo-400 hover:text-red-500"><X size={12} /></button>
+                    </span>
+                ))}
+                <div className="relative">
+                    <button onClick={() => setShowTagDropdown(!showTagDropdown)} className="px-2.5 py-1 rounded-full text-xs font-medium text-slate-400 hover:text-indigo-600 border border-dashed border-slate-300 hover:border-indigo-300 transition-colors">
+                        <Plus size={12} className="inline -mt-0.5" /> Tag
+                    </button>
+                    {showTagDropdown && (
+                        <div className="absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-10 min-w-[140px]">
+                            {allTags.filter((t) => !appTags.some((at) => (at.tag_id || at.id) === t.id)).map((t) => (
+                                <button key={t.id} onClick={() => handleAssignTag(t.id)} className="w-full text-left px-3 py-1.5 text-xs text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">{t.name}</button>
+                            ))}
+                            {allTags.length === 0 && <div className="px-3 py-1.5 text-xs text-slate-400">No tags created</div>}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Salary Info */}
+            {(app.salary_min || app.salary_max) && (
+                <div className="bg-white rounded-2xl border border-slate-200/80 px-6 py-4 mb-5 flex items-center gap-2">
+                    <DollarSign size={14} className="text-emerald-500" />
+                    <span className="text-sm text-slate-600 font-medium">
+                        Salary Range: {app.salary_min ? `$${app.salary_min.toLocaleString()}` : '?'} – {app.salary_max ? `$${app.salary_max.toLocaleString()}` : '?'}
+                    </span>
+                </div>
+            )}
 
             {/* Description */}
             {app.description && (
@@ -258,7 +359,10 @@ export default function ApplicationDetail() {
                                         <div className="pb-5 flex-1 min-w-0">
                                             <div className="flex items-center justify-between mb-0.5">
                                                 <span className="text-sm font-semibold text-slate-800">{stage.stage_name}</span>
-                                                <span className="text-xs text-slate-400">{formatDate(stage.stage_date)}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs text-slate-400">{formatDate(stage.stage_date)}</span>
+                                                    <button onClick={(e) => { e.stopPropagation(); handleDeleteStage(stage.id); }} className="text-slate-300 hover:text-red-500 transition-colors"><Trash2 size={12} /></button>
+                                                </div>
                                             </div>
                                             {stage.notes && <p className="text-sm text-slate-500 leading-relaxed whitespace-pre-wrap">{stage.notes}</p>}
                                         </div>
@@ -405,6 +509,16 @@ export default function ApplicationDetail() {
                     <div className="form-group">
                         <label>Description</label>
                         <textarea rows={3} value={editForm.description || ''} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} />
+                    </div>
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label>Salary Min</label>
+                            <input type="number" placeholder="e.g. 80000" value={editForm.salary_min || ''} onChange={(e) => setEditForm({ ...editForm, salary_min: e.target.value })} />
+                        </div>
+                        <div className="form-group">
+                            <label>Salary Max</label>
+                            <input type="number" placeholder="e.g. 120000" value={editForm.salary_max || ''} onChange={(e) => setEditForm({ ...editForm, salary_max: e.target.value })} />
+                        </div>
                     </div>
                     <div className="form-actions">
                         <button type="button" className="btn-secondary" onClick={() => setShowEditModal(false)}>Cancel</button>

@@ -89,10 +89,27 @@ select {
 .btn-sm { padding: 0.375rem 0.875rem; font-size: 0.75rem; }
 
 /* ── Form Layout ───────────────────────────────────────── */
-.form-group { display: flex; flex-direction: column; gap: 0.375rem; }
+.form-group { display: flex; flex-direction: column; gap: 0.375rem; margin-bottom: 0.75rem; }
 .form-group label { font-size: 0.875rem; font-weight: 500; color: #475569; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .form-actions { display: flex; justify-content: flex-end; gap: 0.5rem; padding-top: 1rem; }
+
+/* ── View Toggle ───────────────────────────────────────── */
+.view-toggle {
+  display: flex; gap: 2px; padding: 3px;
+  background: #f1f5f9; border-radius: 0.75rem;
+}
+.view-toggle-btn {
+  display: inline-flex; align-items: center; gap: 0.375rem;
+  padding: 0.375rem 0.75rem; border-radius: 0.625rem;
+  font-size: 0.75rem; font-weight: 500; color: #94a3b8;
+  transition: all 150ms;
+}
+.view-toggle-btn:hover { color: #64748b; }
+.view-toggle-btn--active {
+  background: #fff; color: #0f172a;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
 
 /* ── Keyframe Animations ──────────────────────────────── */
 @keyframes fadeInUp {
