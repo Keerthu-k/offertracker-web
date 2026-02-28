@@ -1,6 +1,4 @@
-.applications-page {
-    max-width: 1200px;
-}
+/* Styles moved to Tailwind utility classes in Applications.jsx */
 
 .page-header {
     display: flex;

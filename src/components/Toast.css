@@ -1,3 +1,5 @@
+/* Styles moved to Tailwind utility classes in Toast.jsx */
+/*
 .toast-container {
     position: fixed;
     top: var(--space-lg);

@@ -4,16 +4,14 @@ import {
     Briefcase,
     TrendingUp,
     Award,
-    XCircle,
     Plus,
     ArrowRight,
     Target,
     Clock,
+    Rocket,
 } from 'lucide-react';
 import { getApplications } from '../services/api';
 import StatusBadge from '../components/StatusBadge';
-import EmptyState from '../components/EmptyState';
-import './Dashboard.css';
 
 export default function Dashboard() {
     const [applications, setApplications] = useState([]);
@@ -29,7 +27,6 @@ export default function Dashboard() {
             const apps = await getApplications();
             setApplications(apps);
         } catch {
-            // API may not be running, show empty state
             setApplications([]);
         } finally {
             setLoading(false);
@@ -65,146 +62,142 @@ export default function Dashboard() {
 
     if (loading) {
         return (
-            <div className="page-enter dashboard">
-                <div className="dashboard-loading">
-                    <div className="loading-spinner" />
-                    <p>Loading your dashboard...</p>
+            <div className="animate-[fadeInUp_0.4s_ease]">
+                <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 text-slate-400">
+                    <div className="w-9 h-9 border-[3px] border-indigo-100 border-t-indigo-500 rounded-full animate-spin" />
+                    <p className="text-sm">Loading your dashboard...</p>
                 </div>
             </div>
         );
     }
 
-    return (
-        <div className="page-enter dashboard">
-            <div className="dashboard-header">
-                <div>
-                    <h1 className="dashboard-title">Dashboard</h1>
-                    <p className="dashboard-subtitle">Your career intelligence at a glance</p>
+    /* ── Empty / Onboarding State ── */
+    if (applications.length === 0) {
+        return (
+            <div className="animate-[fadeInUp_0.4s_ease]">
+                <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mb-6">
+                        <Rocket size={28} className="text-indigo-500" />
+                    </div>
+                    <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mb-2">Welcome to OfferTracker</h1>
+                    <p className="text-sm text-slate-400 max-w-md mb-8 leading-relaxed">
+                        Track every application, monitor your pipeline, and get insights into your job search — all in one place.
+                    </p>
+                    <button
+                        className="btn-primary text-sm"
+                        onClick={() => navigate('/applications?new=true')}
+                    >
+                        <Plus size={16} />
+                        Add Your First Application
+                    </button>
                 </div>
-                <button className="btn-primary" onClick={() => navigate('/applications')}>
+            </div>
+        );
+    }
+
+    /* ── Stat cards config ── */
+    const statCards = [
+        { label: 'Total', value: stats.total, icon: Briefcase, color: 'bg-blue-50 text-blue-600' },
+        { label: 'Interviewing', value: stats.interviewing, icon: Clock, color: 'bg-amber-50 text-amber-600' },
+        { label: 'Offers', value: stats.offered, icon: Award, color: 'bg-emerald-50 text-emerald-600' },
+        { label: 'Rejected', value: `${rejectionRate}%`, icon: Target, color: 'bg-red-50 text-red-500' },
+    ];
+
+    return (
+        <div className="animate-[fadeInUp_0.4s_ease]">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+                <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Dashboard</h1>
+                <button
+                    className="btn-primary text-sm"
+                    onClick={() => navigate('/applications?new=true')}
+                >
                     <Plus size={16} />
                     New Application
                 </button>
             </div>
 
-            <div className="stats-grid">
-                <div className="stat-card glass-card" style={{ '--stat-accent': 'var(--status-applied)' }}>
-                    <div className="stat-icon">
-                        <Briefcase size={20} />
+            {/* Stats Row */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                {statCards.map((stat, i) => (
+                    <div
+                        key={stat.label}
+                        className="bg-white rounded-2xl border border-slate-200/80 p-5 flex items-center gap-4 hover:shadow-md transition-shadow duration-200 animate-[fadeInUp_0.4s_ease_backwards]"
+                        style={{ animationDelay: `${i * 0.05}s` }}
+                    >
+                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${stat.color}`}>
+                            <stat.icon size={20} />
+                        </div>
+                        <div>
+                            <div className="text-2xl font-extrabold text-slate-900 tracking-tight leading-tight">{stat.value}</div>
+                            <div className="text-xs text-slate-400 font-medium">{stat.label}</div>
+                        </div>
                     </div>
-                    <div className="stat-info">
-                        <span className="stat-value">{stats.total}</span>
-                        <span className="stat-label">Total Applications</span>
+                ))}
+            </div>
+
+            {/* Two-column: Pipeline + Recent */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Application Pipeline */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 animate-[fadeInUp_0.5s_ease_backwards] [animation-delay:0.2s]">
+                    <h2 className="text-sm font-semibold text-slate-800 flex items-center gap-2 mb-5">
+                        <TrendingUp size={16} className="text-slate-400" />
+                        Pipeline
+                    </h2>
+                    <div className="space-y-4">
+                        {Object.entries(statusCounts)
+                            .sort((a, b) => b[1] - a[1])
+                            .map(([status, count]) => (
+                                <div key={status} className="space-y-1.5">
+                                    <div className="flex items-center justify-between">
+                                        <StatusBadge status={status} />
+                                        <span className="text-sm font-semibold text-slate-500">{count}</span>
+                                    </div>
+                                    <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-indigo-500 rounded-full transition-all duration-700"
+                                            style={{ width: `${(count / stats.total) * 100}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
                     </div>
                 </div>
-                <div className="stat-card glass-card" style={{ '--stat-accent': 'var(--status-interview)' }}>
-                    <div className="stat-icon">
-                        <Clock size={20} />
+
+                {/* Recent Applications */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 animate-[fadeInUp_0.5s_ease_backwards] [animation-delay:0.2s]">
+                    <div className="flex items-center justify-between mb-5">
+                        <h2 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+                            <Clock size={16} className="text-slate-400" />
+                            Recent Applications
+                        </h2>
+                        <button
+                            className="text-xs text-indigo-600 font-medium flex items-center gap-1 hover:text-indigo-800 transition-colors"
+                            onClick={() => navigate('/applications')}
+                        >
+                            View all <ArrowRight size={12} />
+                        </button>
                     </div>
-                    <div className="stat-info">
-                        <span className="stat-value">{stats.interviewing}</span>
-                        <span className="stat-label">In Interview</span>
-                    </div>
-                </div>
-                <div className="stat-card glass-card" style={{ '--stat-accent': 'var(--status-offered)' }}>
-                    <div className="stat-icon">
-                        <Award size={20} />
-                    </div>
-                    <div className="stat-info">
-                        <span className="stat-value">{stats.offered}</span>
-                        <span className="stat-label">Offers</span>
-                    </div>
-                </div>
-                <div className="stat-card glass-card" style={{ '--stat-accent': 'var(--status-rejected)' }}>
-                    <div className="stat-icon">
-                        <Target size={20} />
-                    </div>
-                    <div className="stat-info">
-                        <span className="stat-value">{rejectionRate}%</span>
-                        <span className="stat-label">Rejection Rate</span>
+                    <div className="space-y-0.5">
+                        {recentApps.map((app) => (
+                            <div
+                                key={app.id}
+                                className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
+                                onClick={() => navigate(`/applications/${app.id}`)}
+                            >
+                                <div className="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                                    {app.company_name?.charAt(0)?.toUpperCase()}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="text-sm font-semibold text-slate-800 truncate">{app.company_name}</div>
+                                    <div className="text-xs text-slate-400 truncate">{app.role_title}</div>
+                                </div>
+                                <StatusBadge status={app.status} />
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
-
-            {applications.length > 0 && (
-                <div className="dashboard-grid">
-                    <div className="dashboard-section glass-card">
-                        <div className="section-header">
-                            <h2 className="section-title">
-                                <TrendingUp size={18} />
-                                Application Pipeline
-                            </h2>
-                        </div>
-                        <div className="pipeline-bars">
-                            {Object.entries(statusCounts)
-                                .sort((a, b) => b[1] - a[1])
-                                .map(([status, count]) => (
-                                    <div key={status} className="pipeline-row">
-                                        <div className="pipeline-label">
-                                            <StatusBadge status={status} />
-                                            <span className="pipeline-count">{count}</span>
-                                        </div>
-                                        <div className="pipeline-bar-track">
-                                            <div
-                                                className="pipeline-bar-fill"
-                                                style={{
-                                                    width: `${(count / stats.total) * 100}%`,
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
-                        </div>
-                    </div>
-
-                    <div className="dashboard-section glass-card">
-                        <div className="section-header">
-                            <h2 className="section-title">
-                                <Clock size={18} />
-                                Recent Applications
-                            </h2>
-                            <button
-                                className="section-link"
-                                onClick={() => navigate('/applications')}
-                            >
-                                View all <ArrowRight size={14} />
-                            </button>
-                        </div>
-                        <div className="recent-list">
-                            {recentApps.map((app) => (
-                                <div
-                                    key={app.id}
-                                    className="recent-item"
-                                    onClick={() => navigate(`/applications/${app.id}`)}
-                                >
-                                    <div className="recent-company-avatar">
-                                        {app.company_name?.charAt(0)?.toUpperCase()}
-                                    </div>
-                                    <div className="recent-info">
-                                        <span className="recent-company">{app.company_name}</span>
-                                        <span className="recent-role">{app.role_title}</span>
-                                    </div>
-                                    <StatusBadge status={app.status} />
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {applications.length === 0 && (
-                <EmptyState
-                    icon={Briefcase}
-                    title="No applications yet"
-                    description="Start tracking your job applications to unlock powerful analytics and insights."
-                    action={
-                        <button className="btn-primary" onClick={() => navigate('/applications')}>
-                            <Plus size={16} />
-                            Add Your First Application
-                        </button>
-                    }
-                />
-            )}
         </div>
     );
 }

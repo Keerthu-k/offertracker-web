@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Plus,
     Search,
@@ -14,7 +14,6 @@ import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';
 import EmptyState from '../components/EmptyState';
 import { showToast } from '../components/Toast';
-import './Applications.css';
 
 const STATUS_OPTIONS = [
     'All',
@@ -49,10 +48,19 @@ export default function Applications() {
     const [formData, setFormData] = useState(INITIAL_FORM);
     const [submitting, setSubmitting] = useState(false);
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     useEffect(() => {
         loadData();
     }, []);
+
+    /* Auto-open form when navigated with ?new=true (e.g. from Dashboard) */
+    useEffect(() => {
+        if (!loading && searchParams.get('new') === 'true') {
+            setShowForm(true);
+            setSearchParams({}, { replace: true });
+        }
+    }, [loading, searchParams, setSearchParams]);
 
     async function loadData() {
         try {
@@ -111,47 +119,54 @@ export default function Applications() {
 
     if (loading) {
         return (
-            <div className="page-enter applications-page">
-                <div className="dashboard-loading">
-                    <div className="loading-spinner" />
-                    <p>Loading applications...</p>
+            <div className="animate-[fadeInUp_0.4s_ease]">
+                <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 text-slate-400">
+                    <div className="w-9 h-9 border-[3px] border-indigo-100 border-t-indigo-500 rounded-full animate-spin" />
+                    <p className="text-sm">Loading applications...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="page-enter applications-page">
-            <div className="page-header">
+        <div className="animate-[fadeInUp_0.4s_ease]">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="page-title">Applications</h1>
-                    <p className="page-subtitle">
+                    <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mb-1">Applications</h1>
+                    <p className="text-sm text-slate-400">
                         {applications.length} application{applications.length !== 1 ? 's' : ''} tracked
                     </p>
                 </div>
-                <button className="btn-primary" onClick={() => setShowForm(true)}>
+                <button className="btn-primary text-sm" onClick={() => setShowForm(true)}>
                     <Plus size={16} />
                     New Application
                 </button>
             </div>
 
+            {/* Toolbar */}
             {applications.length > 0 && (
-                <div className="applications-toolbar">
-                    <div className="search-box">
-                        <Search size={16} />
+                <div className="space-y-3 mb-8">
+                    <div className="relative max-w-sm">
+                        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                         <input
                             type="text"
                             placeholder="Search by company or role..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
+                            className="!pl-10 !bg-white !border-slate-200"
                         />
                     </div>
-                    <div className="filter-chips">
-                        <Filter size={14} className="filter-icon" />
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <Filter size={14} className="text-slate-400 shrink-0" />
                         {STATUS_OPTIONS.map((status) => (
                             <button
                                 key={status}
-                                className={`chip ${statusFilter === status ? 'chip-active' : ''}`}
+                                className={`px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap ${
+                                    statusFilter === status
+                                        ? 'bg-indigo-50 border-indigo-200 text-indigo-600'
+                                        : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700'
+                                }`}
                                 onClick={() => setStatusFilter(status)}
                             >
                                 {status}
@@ -161,48 +176,49 @@ export default function Applications() {
                 </div>
             )}
 
+            {/* Cards Grid */}
             {filtered.length > 0 ? (
-                <div className="applications-grid">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
                     {filtered.map((app, index) => (
                         <div
                             key={app.id}
-                            className="app-card glass-card"
+                            className="bg-white rounded-2xl border border-slate-200/80 p-5 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group animate-[fadeInUp_0.4s_ease_backwards]"
                             onClick={() => navigate(`/applications/${app.id}`)}
                             style={{ animationDelay: `${index * 0.04}s` }}
                         >
-                            <div className="app-card-header">
-                                <div className="app-avatar">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-base">
                                     {app.company_name?.charAt(0)?.toUpperCase()}
                                 </div>
                                 <StatusBadge status={app.status} />
                             </div>
-                            <div className="app-card-body">
-                                <h3 className="app-company">{app.company_name}</h3>
-                                <p className="app-role">{app.role_title}</p>
-                                <div className="app-meta">
-                                    {app.applied_date && (
-                                        <span className="app-meta-item">
-                                            <Calendar size={12} />
-                                            {formatDate(app.applied_date)}
-                                        </span>
-                                    )}
-                                    {app.applied_source && (
-                                        <span className="app-meta-item">
-                                            <MapPin size={12} />
-                                            {app.applied_source}
-                                        </span>
-                                    )}
-                                    {app.url && (
-                                        <span className="app-meta-item">
-                                            <ExternalLink size={12} />
-                                            Link
-                                        </span>
-                                    )}
-                                </div>
+                            <div className="mb-3">
+                                <h3 className="text-base font-bold text-slate-900 tracking-tight mb-0.5">{app.company_name}</h3>
+                                <p className="text-sm text-slate-500">{app.role_title}</p>
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                                {app.applied_date && (
+                                    <span className="flex items-center gap-1 text-xs text-slate-400">
+                                        <Calendar size={12} />
+                                        {formatDate(app.applied_date)}
+                                    </span>
+                                )}
+                                {app.applied_source && (
+                                    <span className="flex items-center gap-1 text-xs text-slate-400">
+                                        <MapPin size={12} />
+                                        {app.applied_source}
+                                    </span>
+                                )}
+                                {app.url && (
+                                    <span className="flex items-center gap-1 text-xs text-slate-400">
+                                        <ExternalLink size={12} />
+                                        Link
+                                    </span>
+                                )}
                             </div>
                             {app.stages?.length > 0 && (
-                                <div className="app-card-footer">
-                                    <span className="app-stages-count">
+                                <div className="pt-3 mt-3 border-t border-slate-100">
+                                    <span className="text-xs text-slate-400 font-medium">
                                         {app.stages.length} stage{app.stages.length !== 1 ? 's' : ''}
                                     </span>
                                 </div>
@@ -220,16 +236,11 @@ export default function Applications() {
                 <EmptyState
                     icon={Briefcase}
                     title="No applications yet"
-                    description="Start tracking your job search by adding your first application."
-                    action={
-                        <button className="btn-primary" onClick={() => setShowForm(true)}>
-                            <Plus size={16} />
-                            Add Application
-                        </button>
-                    }
+                    description='Click "New Application" above to start tracking your job search.'
                 />
             )}
 
+            {/* New Application Modal */}
             <Modal
                 isOpen={showForm}
                 onClose={() => setShowForm(false)}

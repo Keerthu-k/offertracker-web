@@ -1,6 +1,4 @@
-.dashboard {
-    max-width: 1200px;
-}
+/* Styles moved to Tailwind utility classes in Dashboard.jsx */
 
 .dashboard-header {
     display: flex;

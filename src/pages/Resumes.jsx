@@ -12,7 +12,6 @@ import { getResumes, createResume, updateResume } from '../services/api';
 import Modal from '../components/Modal';
 import EmptyState from '../components/EmptyState';
 import { showToast } from '../components/Toast';
-import './Resumes.css';
 
 const INITIAL_FORM = { version_name: '', notes: '', file_url: '' };
 
@@ -95,42 +94,44 @@ export default function Resumes() {
 
     if (loading) {
         return (
-            <div className="page-enter resumes-page">
-                <div className="dashboard-loading">
-                    <div className="loading-spinner" />
-                    <p>Loading resumes...</p>
+            <div className="animate-[fadeInUp_0.4s_ease]">
+                <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 text-slate-400">
+                    <div className="w-9 h-9 border-[3px] border-indigo-100 border-t-indigo-500 rounded-full animate-spin" />
+                    <p className="text-sm">Loading resumes...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="page-enter resumes-page">
-            <div className="page-header">
+        <div className="animate-[fadeInUp_0.4s_ease]">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="page-title">Resumes</h1>
-                    <p className="page-subtitle">
+                    <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mb-1">Resumes</h1>
+                    <p className="text-sm text-slate-400">
                         {resumes.length} version{resumes.length !== 1 ? 's' : ''} tracked
                     </p>
                 </div>
-                <button className="btn-primary" onClick={() => setShowForm(true)}>
+                <button className="btn-primary text-sm" onClick={() => setShowForm(true)}>
                     <Plus size={16} />
                     New Version
                 </button>
             </div>
 
+            {/* Cards Grid */}
             {resumes.length > 0 ? (
-                <div className="resumes-grid">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
                     {resumes
                         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
                         .map((resume, index) => (
                             <div
                                 key={resume.id}
-                                className="resume-card glass-card"
+                                className="bg-white rounded-2xl border border-slate-200/80 p-5 hover:shadow-md transition-all duration-200 group animate-[fadeInUp_0.4s_ease_backwards]"
                                 style={{ animationDelay: `${index * 0.04}s` }}
                             >
                                 {editingId === resume.id ? (
-                                    <div className="resume-edit-form">
+                                    <div className="flex flex-col gap-3">
                                         <div className="form-group">
                                             <label>Version Name</label>
                                             <input
@@ -155,7 +156,7 @@ export default function Resumes() {
                                                 onChange={(e) => setEditData({ ...editData, file_url: e.target.value })}
                                             />
                                         </div>
-                                        <div className="resume-edit-actions">
+                                        <div className="flex gap-2 justify-end">
                                             <button className="btn-secondary btn-sm" onClick={() => setEditingId(null)}>
                                                 <X size={14} /> Cancel
                                             </button>
@@ -170,23 +171,23 @@ export default function Resumes() {
                                     </div>
                                 ) : (
                                     <>
-                                        <div className="resume-card-header">
-                                            <div className="resume-icon">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center">
                                                 <FileText size={20} />
                                             </div>
                                             <button
-                                                className="resume-edit-btn"
+                                                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors opacity-0 group-hover:opacity-100"
                                                 onClick={() => startEdit(resume)}
                                             >
                                                 <Edit3 size={14} />
                                             </button>
                                         </div>
-                                        <h3 className="resume-name">{resume.version_name}</h3>
+                                        <h3 className="text-base font-bold text-slate-900 tracking-tight mb-1">{resume.version_name}</h3>
                                         {resume.notes && (
-                                            <p className="resume-notes">{resume.notes}</p>
+                                            <p className="text-sm text-slate-500 mb-3 leading-relaxed line-clamp-3">{resume.notes}</p>
                                         )}
-                                        <div className="resume-meta">
-                                            <span className="resume-meta-item">
+                                        <div className="flex flex-wrap gap-3">
+                                            <span className="flex items-center gap-1 text-xs text-slate-400">
                                                 <Calendar size={12} />
                                                 {formatDate(resume.created_at)}
                                             </span>
@@ -195,7 +196,7 @@ export default function Resumes() {
                                                     href={resume.file_url}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="resume-meta-item resume-file-link"
+                                                    className="flex items-center gap-1 text-xs text-indigo-500 hover:text-indigo-700 transition-colors"
                                                 >
                                                     <LinkIcon size={12} />
                                                     View File
@@ -211,16 +212,11 @@ export default function Resumes() {
                 <EmptyState
                     icon={FileText}
                     title="No resume versions"
-                    description="Track different versions of your resume and link them to applications."
-                    action={
-                        <button className="btn-primary" onClick={() => setShowForm(true)}>
-                            <Plus size={16} />
-                            Add Resume Version
-                        </button>
-                    }
+                    description='Click "New Version" above to start tracking different versions of your resume.'
                 />
             )}
 
+            {/* Create Modal */}
             <Modal
                 isOpen={showForm}
                 onClose={() => setShowForm(false)}
