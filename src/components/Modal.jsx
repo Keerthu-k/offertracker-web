@@ -1,17 +1,26 @@
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 const sizes = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl' };
 
 export default function Modal({ isOpen, onClose, title, children, size = 'md' }) {
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
+    useLayoutEffect(() => {
+        if (!isOpen) return;
+
+        const { body, documentElement } = document;
+        const previousOverflow = body.style.overflow;
+        const previousPaddingRight = body.style.paddingRight;
+        const scrollbarWidth = window.innerWidth - documentElement.clientWidth;
+
+        body.style.overflow = 'hidden';
+        if (scrollbarWidth > 0) {
+            body.style.paddingRight = `${scrollbarWidth}px`;
         }
+
         return () => {
-            document.body.style.overflow = '';
+            body.style.overflow = previousOverflow;
+            body.style.paddingRight = previousPaddingRight;
         };
     }, [isOpen]);
 
@@ -27,7 +36,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
 
     if (!isOpen) return null;
 
-    return (
+    return createPortal(
         <div
             className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-[fadeIn_0.2s_ease]"
             onClick={onClose}
@@ -49,6 +58,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
                     {children}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

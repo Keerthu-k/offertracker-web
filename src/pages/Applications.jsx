@@ -44,23 +44,30 @@ export default function Applications() {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
-    const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState(INITIAL_FORM);
     const [submitting, setSubmitting] = useState(false);
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
 
+    /* Derive initial showForm from URL so the modal is open on the very first
+       render — no flash of the page without the modal. */
+    const autoOpen = searchParams.get('new') === 'true';
+    const [showForm, setShowForm] = useState(autoOpen);
+
     useEffect(() => {
         loadData();
     }, []);
 
-    /* Auto-open form when navigated with ?new=true (e.g. from Dashboard) */
+    /* Strip the ?new param from the URL (cosmetic, doesn't trigger re-render of modal) */
     useEffect(() => {
-        if (!loading && searchParams.get('new') === 'true') {
-            setShowForm(true);
-            setSearchParams({}, { replace: true });
+        if (autoOpen) {
+            const nextParams = new URLSearchParams(searchParams);
+            nextParams.delete('new');
+            setSearchParams(nextParams, { replace: true });
         }
-    }, [loading, searchParams, setSearchParams]);
+        // Run only on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     async function loadData() {
         try {
