@@ -8,9 +8,9 @@ import Resumes from './pages/Resumes';
 
 function App() {
   return (
-    <div className="app-layout">
+    <div className="flex min-h-screen bg-slate-50">
       <Sidebar />
-      <main className="main-content">
+      <main className="flex-1 ml-64 py-8 px-8 lg:px-12 xl:px-16">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/applications" element={<Applications />} />

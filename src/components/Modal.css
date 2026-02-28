@@ -1,3 +1,5 @@
+/* Styles moved to Tailwind utility classes in Modal.jsx */
+/*
 .modal-overlay {
     position: fixed;
     inset: 0;

@@ -1,6 +1,4 @@
-.resumes-page {
-    max-width: 1200px;
-}
+/* Styles moved to Tailwind utility classes in Resumes.jsx */
 
 .resumes-grid {
     display: grid;

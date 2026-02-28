@@ -16,7 +16,6 @@ import {
     TrendingUp,
     Clock,
     FileText,
-    MessageSquare,
 } from 'lucide-react';
 import {
     getApplication,
@@ -28,7 +27,6 @@ import {
 import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';
 import { showToast } from '../components/Toast';
-import './ApplicationDetail.css';
 
 const OUTCOME_STATUSES = ['Offered', 'Rejected', 'Ghosted', 'Withdrawn'];
 
@@ -38,13 +36,11 @@ export default function ApplicationDetail() {
     const [app, setApp] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Modals
     const [showEditModal, setShowEditModal] = useState(false);
     const [showStageModal, setShowStageModal] = useState(false);
     const [showOutcomeModal, setShowOutcomeModal] = useState(false);
     const [showReflectionModal, setShowReflectionModal] = useState(false);
 
-    // Forms
     const [editForm, setEditForm] = useState({});
     const [stageForm, setStageForm] = useState({ stage_name: '', stage_date: '', notes: '' });
     const [outcomeForm, setOutcomeForm] = useState({ status: 'Offered', rejection_reason: '', notes: '' });
@@ -162,20 +158,12 @@ export default function ApplicationDetail() {
         });
     }
 
-    function formatDateTime(dateStr) {
-        if (!dateStr) return '';
-        return new Date(dateStr).toLocaleDateString('en-US', {
-            month: 'short', day: 'numeric', year: 'numeric',
-            hour: '2-digit', minute: '2-digit',
-        });
-    }
-
     if (loading) {
         return (
-            <div className="page-enter detail-page">
-                <div className="dashboard-loading">
-                    <div className="loading-spinner" />
-                    <p>Loading application...</p>
+            <div className="max-w-4xl animate-[fadeInUp_0.4s_ease]">
+                <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 text-slate-400">
+                    <div className="w-9 h-9 border-[3px] border-indigo-100 border-t-indigo-500 rounded-full animate-spin" />
+                    <p className="text-sm">Loading application...</p>
                 </div>
             </div>
         );
@@ -183,52 +171,53 @@ export default function ApplicationDetail() {
 
     if (!app) {
         return (
-            <div className="page-enter detail-page">
-                <button className="back-btn" onClick={() => navigate('/applications')}>
+            <div className="max-w-4xl animate-[fadeInUp_0.4s_ease]">
+                <button className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors mb-6" onClick={() => navigate('/applications')}>
                     <ArrowLeft size={16} /> Back to Applications
                 </button>
-                <div className="detail-not-found">Application not found.</div>
+                <div className="text-center py-16 text-slate-400 text-lg">Application not found.</div>
             </div>
         );
     }
 
     return (
-        <div className="page-enter detail-page">
-            <button className="back-btn" onClick={() => navigate('/applications')}>
+        <div className="max-w-4xl animate-[fadeInUp_0.4s_ease]">
+            {/* Back */}
+            <button className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors mb-6" onClick={() => navigate('/applications')}>
                 <ArrowLeft size={16} /> Back to Applications
             </button>
 
-            {/* Header */}
-            <div className="detail-header glass-card">
-                <div className="detail-header-main">
-                    <div className="detail-avatar">
+            {/* Header Card */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 flex items-start justify-between mb-5">
+                <div className="flex gap-5 items-start">
+                    <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white font-extrabold text-xl shrink-0 shadow-lg shadow-indigo-500/20">
                         {app.company_name?.charAt(0)?.toUpperCase()}
                     </div>
-                    <div className="detail-header-info">
-                        <h1 className="detail-company">{app.company_name}</h1>
-                        <p className="detail-role">{app.role_title}</p>
-                        <div className="detail-meta">
+                    <div className="min-w-0">
+                        <h1 className="text-xl font-extrabold text-slate-900 tracking-tight mb-0.5">{app.company_name}</h1>
+                        <p className="text-sm text-slate-500 mb-2">{app.role_title}</p>
+                        <div className="flex flex-wrap gap-4">
                             {app.applied_date && (
-                                <span className="detail-meta-item">
+                                <span className="flex items-center gap-1 text-xs text-slate-400">
                                     <Calendar size={13} /> {formatDate(app.applied_date)}
                                 </span>
                             )}
                             {app.applied_source && (
-                                <span className="detail-meta-item">
+                                <span className="flex items-center gap-1 text-xs text-slate-400">
                                     <MapPin size={13} /> {app.applied_source}
                                 </span>
                             )}
                             {app.url && (
-                                <a href={app.url} target="_blank" rel="noreferrer" className="detail-meta-item detail-link">
+                                <a href={app.url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs text-indigo-500 hover:text-indigo-700 transition-colors">
                                     <ExternalLink size={13} /> Job Posting
                                 </a>
                             )}
                         </div>
                     </div>
                 </div>
-                <div className="detail-header-actions">
+                <div className="flex items-center gap-3 shrink-0">
                     <StatusBadge status={app.status} />
-                    <button className="btn-secondary" onClick={() => setShowEditModal(true)}>
+                    <button className="btn-secondary btn-sm" onClick={() => setShowEditModal(true)}>
                         <Edit3 size={14} /> Edit
                     </button>
                 </div>
@@ -236,57 +225,58 @@ export default function ApplicationDetail() {
 
             {/* Description */}
             {app.description && (
-                <div className="detail-section glass-card">
-                    <h2 className="detail-section-title">
-                        <FileText size={16} /> Description
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 mb-5">
+                    <h2 className="text-sm font-semibold text-slate-800 flex items-center gap-2 mb-3">
+                        <FileText size={16} className="text-slate-400" /> Description
                     </h2>
-                    <p className="detail-description">{app.description}</p>
+                    <p className="text-sm text-slate-500 leading-relaxed whitespace-pre-wrap">{app.description}</p>
                 </div>
             )}
 
-            <div className="detail-grid">
+            {/* Two Column Grid */}
+            <div className="grid grid-cols-2 gap-5 max-[900px]:grid-cols-1">
                 {/* Timeline */}
-                <div className="detail-section glass-card">
-                    <div className="detail-section-header">
-                        <h2 className="detail-section-title">
-                            <Clock size={16} /> Interview Timeline
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-6">
+                    <div className="flex items-center justify-between mb-5">
+                        <h2 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+                            <Clock size={16} className="text-slate-400" /> Interview Timeline
                         </h2>
                         <button className="btn-secondary btn-sm" onClick={() => setShowStageModal(true)}>
                             <Plus size={14} /> Add Stage
                         </button>
                     </div>
                     {app.stages?.length > 0 ? (
-                        <div className="timeline">
+                        <div className="flex flex-col">
                             {app.stages
                                 .sort((a, b) => new Date(a.stage_date) - new Date(b.stage_date))
                                 .map((stage, i) => (
-                                    <div key={stage.id} className="timeline-item">
-                                        <div className="timeline-marker">
-                                            <div className="timeline-dot" />
-                                            {i < app.stages.length - 1 && <div className="timeline-line" />}
+                                    <div key={stage.id} className="flex gap-4 relative">
+                                        <div className="flex flex-col items-center shrink-0 pt-1">
+                                            <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-sm shadow-indigo-500/30 shrink-0" />
+                                            {i < app.stages.length - 1 && <div className="w-0.5 flex-1 bg-indigo-100 mt-1 min-h-5" />}
                                         </div>
-                                        <div className="timeline-content">
-                                            <div className="timeline-header">
-                                                <span className="timeline-name">{stage.stage_name}</span>
-                                                <span className="timeline-date">{formatDate(stage.stage_date)}</span>
+                                        <div className="pb-5 flex-1 min-w-0">
+                                            <div className="flex items-center justify-between mb-0.5">
+                                                <span className="text-sm font-semibold text-slate-800">{stage.stage_name}</span>
+                                                <span className="text-xs text-slate-400">{formatDate(stage.stage_date)}</span>
                                             </div>
-                                            {stage.notes && <p className="timeline-notes">{stage.notes}</p>}
+                                            {stage.notes && <p className="text-sm text-slate-500 leading-relaxed whitespace-pre-wrap">{stage.notes}</p>}
                                         </div>
                                     </div>
                                 ))}
                         </div>
                     ) : (
-                        <p className="detail-empty">No interview stages recorded yet.</p>
+                        <p className="text-sm text-slate-400 italic">No interview stages recorded yet.</p>
                     )}
                 </div>
 
-                {/* Outcome & Reflection */}
-                <div className="detail-right-col">
+                {/* Right Column: Outcome + Reflection */}
+                <div className="flex flex-col gap-5">
                     {/* Outcome */}
-                    <div className="detail-section glass-card">
-                        <div className="detail-section-header">
-                            <h2 className="detail-section-title">
-                                <Target size={16} /> Outcome
+                    <div className="bg-white rounded-2xl border border-slate-200/80 p-6">
+                        <div className="flex items-center justify-between mb-5">
+                            <h2 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+                                <Target size={16} className="text-slate-400" /> Outcome
                             </h2>
                             {!app.outcome && (
                                 <button className="btn-secondary btn-sm" onClick={() => setShowOutcomeModal(true)}>
@@ -295,37 +285,37 @@ export default function ApplicationDetail() {
                             )}
                         </div>
                         {app.outcome ? (
-                            <div className="outcome-card">
-                                <div className="outcome-status">
-                                    {app.outcome.status?.toLowerCase() === 'offered' && <CheckCircle size={20} className="outcome-icon offered" />}
-                                    {app.outcome.status?.toLowerCase() === 'rejected' && <XCircle size={20} className="outcome-icon rejected" />}
-                                    {app.outcome.status?.toLowerCase() === 'ghosted' && <Ghost size={20} className="outcome-icon ghosted" />}
-                                    {!['offered', 'rejected', 'ghosted'].includes(app.outcome.status?.toLowerCase()) && <AlertTriangle size={20} className="outcome-icon" />}
-                                    <span className="outcome-label">{app.outcome.status}</span>
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2 text-base font-bold">
+                                    {app.outcome.status?.toLowerCase() === 'offered' && <CheckCircle size={20} className="text-emerald-500" />}
+                                    {app.outcome.status?.toLowerCase() === 'rejected' && <XCircle size={20} className="text-red-500" />}
+                                    {app.outcome.status?.toLowerCase() === 'ghosted' && <Ghost size={20} className="text-gray-400" />}
+                                    {!['offered', 'rejected', 'ghosted'].includes(app.outcome.status?.toLowerCase()) && <AlertTriangle size={20} className="text-amber-500" />}
+                                    <span className="text-slate-800">{app.outcome.status}</span>
                                 </div>
                                 {app.outcome.rejection_reason && (
-                                    <div className="outcome-detail">
-                                        <span className="outcome-detail-label">Reason</span>
-                                        <p>{app.outcome.rejection_reason}</p>
+                                    <div className="pl-7">
+                                        <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">Reason</span>
+                                        <p className="text-sm text-slate-500 leading-relaxed">{app.outcome.rejection_reason}</p>
                                     </div>
                                 )}
                                 {app.outcome.notes && (
-                                    <div className="outcome-detail">
-                                        <span className="outcome-detail-label">Notes</span>
-                                        <p>{app.outcome.notes}</p>
+                                    <div className="pl-7">
+                                        <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">Notes</span>
+                                        <p className="text-sm text-slate-500 leading-relaxed">{app.outcome.notes}</p>
                                     </div>
                                 )}
                             </div>
                         ) : (
-                            <p className="detail-empty">No outcome recorded yet.</p>
+                            <p className="text-sm text-slate-400 italic">No outcome recorded yet.</p>
                         )}
                     </div>
 
                     {/* Reflection */}
-                    <div className="detail-section glass-card">
-                        <div className="detail-section-header">
-                            <h2 className="detail-section-title">
-                                <Lightbulb size={16} /> Reflection
+                    <div className="bg-white rounded-2xl border border-slate-200/80 p-6">
+                        <div className="flex items-center justify-between mb-5">
+                            <h2 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+                                <Lightbulb size={16} className="text-slate-400" /> Reflection
                             </h2>
                             {!app.reflection && (
                                 <button className="btn-secondary btn-sm" onClick={() => setShowReflectionModal(true)}>
@@ -334,42 +324,42 @@ export default function ApplicationDetail() {
                             )}
                         </div>
                         {app.reflection ? (
-                            <div className="reflection-grid">
+                            <div className="space-y-3">
                                 {app.reflection.what_worked && (
-                                    <div className="reflection-item">
-                                        <div className="reflection-label">
-                                            <CheckCircle size={14} className="text-green" /> What Worked
+                                    <div className="p-3.5 rounded-xl bg-emerald-50/50 border border-emerald-100">
+                                        <div className="flex items-center gap-1.5 text-sm font-semibold text-emerald-700 mb-1">
+                                            <CheckCircle size={14} /> What Worked
                                         </div>
-                                        <p>{app.reflection.what_worked}</p>
+                                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{app.reflection.what_worked}</p>
                                     </div>
                                 )}
                                 {app.reflection.what_failed && (
-                                    <div className="reflection-item">
-                                        <div className="reflection-label">
-                                            <XCircle size={14} className="text-red" /> What Failed
+                                    <div className="p-3.5 rounded-xl bg-red-50/50 border border-red-100">
+                                        <div className="flex items-center gap-1.5 text-sm font-semibold text-red-700 mb-1">
+                                            <XCircle size={14} /> What Failed
                                         </div>
-                                        <p>{app.reflection.what_failed}</p>
+                                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{app.reflection.what_failed}</p>
                                     </div>
                                 )}
                                 {app.reflection.skill_gaps && (
-                                    <div className="reflection-item">
-                                        <div className="reflection-label">
-                                            <AlertTriangle size={14} className="text-amber" /> Skill Gaps
+                                    <div className="p-3.5 rounded-xl bg-amber-50/50 border border-amber-100">
+                                        <div className="flex items-center gap-1.5 text-sm font-semibold text-amber-700 mb-1">
+                                            <AlertTriangle size={14} /> Skill Gaps
                                         </div>
-                                        <p>{app.reflection.skill_gaps}</p>
+                                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{app.reflection.skill_gaps}</p>
                                     </div>
                                 )}
                                 {app.reflection.improvement_plan && (
-                                    <div className="reflection-item">
-                                        <div className="reflection-label">
-                                            <TrendingUp size={14} className="text-cyan" /> Improvement Plan
+                                    <div className="p-3.5 rounded-xl bg-sky-50/50 border border-sky-100">
+                                        <div className="flex items-center gap-1.5 text-sm font-semibold text-sky-700 mb-1">
+                                            <TrendingUp size={14} /> Improvement Plan
                                         </div>
-                                        <p>{app.reflection.improvement_plan}</p>
+                                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{app.reflection.improvement_plan}</p>
                                     </div>
                                 )}
                             </div>
                         ) : (
-                            <p className="detail-empty">No reflection added yet.</p>
+                            <p className="text-sm text-slate-400 italic">No reflection added yet.</p>
                         )}
                     </div>
                 </div>

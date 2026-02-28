@@ -1,6 +1,4 @@
-.detail-page {
-    max-width: 1100px;
-}
+/* Styles moved to Tailwind utility classes in ApplicationDetail.jsx */
 
 .back-btn {
     display: inline-flex;
