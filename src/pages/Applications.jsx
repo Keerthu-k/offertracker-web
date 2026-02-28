@@ -10,8 +10,10 @@ import {
     Filter,
     LayoutGrid,
     Columns3,
+    Trash2,
+    DollarSign,
 } from 'lucide-react';
-import { getApplications, createApplication, updateApplication, getResumes } from '../services/api';
+import { getApplications, createApplication, updateApplication, deleteApplication, getResumes } from '../services/api';
 import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';
 import EmptyState from '../components/EmptyState';
@@ -39,6 +41,8 @@ const INITIAL_FORM = {
     status: 'Applied',
     applied_date: '',
     resume_version_id: '',
+    salary_min: '',
+    salary_max: '',
 };
 
 export default function Applications() {
@@ -123,6 +127,10 @@ export default function Applications() {
             if (!payload.description) delete payload.description;
             if (!payload.applied_date) delete payload.applied_date;
             if (!payload.resume_version_id) delete payload.resume_version_id;
+            if (payload.salary_min) payload.salary_min = Number(payload.salary_min);
+            else delete payload.salary_min;
+            if (payload.salary_max) payload.salary_max = Number(payload.salary_max);
+            else delete payload.salary_max;
             await createApplication(payload);
             showToast('Application created successfully!');
             setShowForm(false);
@@ -282,6 +290,14 @@ export default function Applications() {
                                                 Link
                                             </span>
                                         )}
+                                        {(app.salary_min || app.salary_max) && (
+                                            <span className="flex items-center gap-1 text-xs text-emerald-500">
+                                                <DollarSign size={12} />
+                                                {app.salary_min ? `${(app.salary_min / 1000).toFixed(0)}k` : '?'}
+                                                {' – '}
+                                                {app.salary_max ? `${(app.salary_max / 1000).toFixed(0)}k` : '?'}
+                                            </span>
+                                        )}
                                     </div>
                                     {app.stages?.length > 0 && (
                                         <div className="pt-3 mt-3 border-t border-slate-100">
@@ -405,6 +421,30 @@ export default function Applications() {
                                 setFormData({ ...formData, url: e.target.value })
                             }
                         />
+                    </div>
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label>Salary Min</label>
+                            <input
+                                type="number"
+                                placeholder="e.g. 80000"
+                                value={formData.salary_min}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, salary_min: e.target.value })
+                                }
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Salary Max</label>
+                            <input
+                                type="number"
+                                placeholder="e.g. 120000"
+                                value={formData.salary_max}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, salary_max: e.target.value })
+                                }
+                            />
+                        </div>
                     </div>
                     <div className="form-group">
                         <label>Description</label>

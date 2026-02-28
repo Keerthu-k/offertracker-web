@@ -7,8 +7,10 @@ import {
     Link as LinkIcon,
     Check,
     X,
+    Trash2,
+    Upload,
 } from 'lucide-react';
-import { getResumes, createResume, updateResume } from '../services/api';
+import { getResumes, createResume, updateResume, deleteResume, uploadResumeFile } from '../services/api';
 import Modal from '../components/Modal';
 import EmptyState from '../components/EmptyState';
 import { showToast } from '../components/Toast';
@@ -82,6 +84,29 @@ export default function Resumes() {
             showToast(err.message || 'Update failed', 'error');
         } finally {
             setSubmitting(false);
+        }
+    }
+
+    async function handleDelete(id) {
+        if (!confirm('Delete this resume version?')) return;
+        try {
+            await deleteResume(id);
+            showToast('Resume deleted');
+            loadData();
+        } catch (err) {
+            showToast(err.message || 'Delete failed', 'error');
+        }
+    }
+
+    async function handleFileUpload(resumeId, e) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        try {
+            await uploadResumeFile(resumeId, file);
+            showToast('File uploaded!');
+            loadData();
+        } catch (err) {
+            showToast(err.message || 'Upload failed', 'error');
         }
     }
 
@@ -175,12 +200,24 @@ export default function Resumes() {
                                             <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center">
                                                 <FileText size={20} />
                                             </div>
-                                            <button
-                                                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors opacity-0 group-hover:opacity-100"
-                                                onClick={() => startEdit(resume)}
-                                            >
-                                                <Edit3 size={14} />
-                                            </button>
+                                            <div className="flex items-center gap-1">
+                                                <label className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-indigo-600 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" title="Upload file">
+                                                    <Upload size={14} />
+                                                    <input type="file" className="hidden" accept=".pdf,.doc,.docx" onChange={(e) => handleFileUpload(resume.id, e)} />
+                                                </label>
+                                                <button
+                                                    className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors opacity-0 group-hover:opacity-100"
+                                                    onClick={() => startEdit(resume)}
+                                                >
+                                                    <Edit3 size={14} />
+                                                </button>
+                                                <button
+                                                    className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                                    onClick={() => handleDelete(resume.id)}
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
                                         </div>
                                         <h3 className="text-base font-bold text-slate-900 tracking-tight mb-1">{resume.version_name}</h3>
                                         {resume.notes && (
