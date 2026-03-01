@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Sparkles,
   ArrowLeft,
   Mail,
   Lock,
@@ -66,7 +65,9 @@ export default function Signup() {
         </Link>
 
         <div className="auth-logo">
-          <div className="auth-logo-icon"><Sparkles size={16} /></div>
+          <div className="auth-logo-icon">
+            <img src="/favicon/favicon.svg" alt="OfferTracker Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit' }} />
+          </div>
           <span>OfferTracker</span>
         </div>
 
@@ -81,7 +82,7 @@ export default function Signup() {
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="field">
-            <label htmlFor="display_name">Display Name <span style={{color:'#94a3b8',fontWeight:400}}>(optional)</span></label>
+            <label htmlFor="display_name">Display Name <span style={{ color: '#94a3b8', fontWeight: 400 }}>(optional)</span></label>
             <div className="input-wrap">
               <User size={15} className="input-icon" />
               <input

@@ -43,7 +43,7 @@ The frontend is a modern, responsive Single Page Application (SPA) designed with
 - **Icons**: Lucide React
 - **Data Visualization**: D3.js (Analytics, Funnel Charts, Activity Heatmaps)
 
-*(Note: The backend is powered by FastAPI and PostgreSQL).*
+*(Note: The backend is powered by FastAPI and PostgreSQL. Check out the backend repository here: [offertracker-backend](https://github.com/Keerthu-k/offertracker-backend)).*
 
 ## Getting Started
 
