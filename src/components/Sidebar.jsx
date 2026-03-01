@@ -3,7 +3,6 @@ import {
     LayoutDashboard,
     Briefcase,
     FileText,
-    Sparkles,
     Bookmark,
     Users,
     Settings,
@@ -65,8 +64,8 @@ export default function Sidebar() {
         <aside className="fixed top-0 left-0 w-[72px] h-screen bg-slate-900 flex flex-col z-50 overflow-y-auto border-r border-slate-800">
             {/* Logo */}
             <div className="flex justify-center pt-6 pb-6">
-                <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/25" title="OfferTracker">
-                    <Sparkles size={17} />
+                <div className="w-9 h-9 flex items-center justify-center text-white" title="OfferTracker">
+                    <img src="/favicon/favicon.svg" alt="OfferTracker Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit' }} />
                 </div>
             </div>
 

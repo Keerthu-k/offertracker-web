@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Sparkles,
   ArrowRight,
   Briefcase,
   Users,
   BookOpen,
   FileText,
+  Github,
 } from 'lucide-react';
 import './Landing.css';
 
@@ -24,7 +24,9 @@ export default function Landing() {
       {/* ── Nav ──────────────────────────────────────── */}
       <nav className={`landing-nav ${scrolled ? 'scrolled' : ''}`}>
         <div className="logo">
-          <div className="logo-icon"><Sparkles size={16} /></div>
+          <div className="logo-icon">
+            <img src="/favicon/favicon.svg" alt="OfferTracker Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit' }} />
+          </div>
           <span className="logo-text">OfferTracker</span>
         </div>
         <div className="nav-links">
@@ -94,7 +96,16 @@ export default function Landing() {
 
       {/* ── Footer ───────────────────────────────────── */}
       <footer className="landing-footer">
-        <p>&copy; {new Date().getFullYear()} OfferTracker</p>
+        <div className="footer-content">
+          <p className="footer-copy">
+            &copy; {new Date().getFullYear()} <a href="https://github.com/Keerthu-k" target="_blank" rel="noopener noreferrer">Keerthana</a> &mdash; OfferTracker
+          </p>
+          <div className="footer-links">
+            <a href="https://github.com/Keerthu-k/offertracker-backend" target="_blank" rel="noopener noreferrer">Backend</a>
+            <span className="footer-divider">&middot;</span>
+            <a href="https://github.com/Keerthu-k/offertracker-web" target="_blank" rel="noopener noreferrer">Star on GitHub</a>
+          </div>
+        </div>
       </footer>
     </div>
   );
