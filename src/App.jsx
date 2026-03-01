@@ -65,7 +65,7 @@ function App() {
     <ProtectedRoute>
       <div className="flex min-h-screen bg-slate-50">
         <Sidebar />
-        <main className="flex-1 ml-64 py-6 px-6 lg:px-10 xl:px-14">
+        <main className="flex-1 ml-[72px] py-6 px-6 lg:px-10 xl:px-14">
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/applications" element={<Applications />} />

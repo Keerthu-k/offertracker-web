@@ -112,9 +112,9 @@ export default function SavedJobs() {
 
             <div className="flex items-center gap-3 mb-6">
                 <div className="relative flex-1 max-w-xs">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                     <input
-                        type="text" placeholder="Search saved jobs..." className="pl-9 !rounded-xl"
+                        type="text" placeholder="Search saved jobs..." className="!pl-10 !bg-white !border-slate-200 !rounded-xl"
                         value={search} onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
@@ -122,9 +122,8 @@ export default function SavedJobs() {
                     {['Active', 'Archived', 'Converted', 'All'].map((s) => (
                         <button
                             key={s} onClick={() => setFilter(s)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                                filter === s ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:text-slate-700'
-                            }`}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${filter === s ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:text-slate-700'
+                                }`}
                         >
                             {s}
                         </button>

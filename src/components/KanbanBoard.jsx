@@ -6,27 +6,29 @@ import './KanbanBoard.css';
 
 /* ── 5 main pipeline columns ─────────────────────────────── */
 const COLUMNS = [
-    { key: 'Applied',   label: 'Applied',   color: '#3b82f6' },
-    { key: 'Interview', label: 'Interview',  color: '#f59e0b' },
-    { key: 'Offered',   label: 'Offered',    color: '#10b981' },
-    { key: 'Rejected',  label: 'Rejected',   color: '#ef4444' },
-    { key: 'Ghosted',   label: 'Ghosted',    color: '#9ca3af' },
+    { key: 'Open', label: 'Open', color: '#8b5cf6' },
+    { key: 'Applied', label: 'Applied', color: '#3b82f6' },
+    { key: 'Shortlisted', label: 'Shortlisted', color: '#0ea5e9' },
+    { key: 'Interview', label: 'Interview', color: '#f59e0b' },
+    { key: 'Offer', label: 'Offer', color: '#10b981' },
+    { key: 'Rejected', label: 'Rejected', color: '#ef4444' },
+    { key: 'Closed', label: 'Closed', color: '#64748b' },
 ];
 
 /* Secondary statuses — shown via card menu, mapped to a display column */
 const SECONDARY_STATUSES = [
-    { key: 'Accepted',  label: 'Accepted',  color: '#14b8a6', displayIn: 'Offered'  },
-    { key: 'Declined',  label: 'Declined',  color: '#f97316', displayIn: 'Offered'  },
-    { key: 'Withdrawn', label: 'Withdrawn', color: '#a855f7', displayIn: 'Applied'  },
+    { key: 'Accepted', label: 'Accepted', color: '#14b8a6', displayIn: 'Offer' },
+    { key: 'Declined', label: 'Declined', color: '#f97316', displayIn: 'Offer' },
+    { key: 'Withdrawn', label: 'Withdrawn', color: '#a855f7', displayIn: 'Applied' },
 ];
 
 /* Which column should a status appear under? */
 function getColumnKey(status) {
-    const s = (status || 'Applied').toLowerCase();
+    const s = (status || 'Open').toLowerCase();
     const col = COLUMNS.find((c) => c.key.toLowerCase() === s);
     if (col) return col.key;
     const sec = SECONDARY_STATUSES.find((sc) => sc.key.toLowerCase() === s);
-    return sec ? sec.displayIn : 'Applied';
+    return sec ? sec.displayIn : 'Open';
 }
 
 function formatDate(dateStr) {
@@ -42,7 +44,7 @@ function isSecondary(status) {
 /* ── Popover menu for status changes ─────────────────────── */
 function StatusMenu({ app, onStatusChange, onClose }) {
     const menuRef = useRef(null);
-    const currentStatus = (app.status || 'Applied');
+    const currentStatus = (app.status || 'Open');
 
     useEffect(() => {
         function handleClickOutside(e) {
@@ -59,12 +61,13 @@ function StatusMenu({ app, onStatusChange, onClose }) {
     ].filter((o) => o.key.toLowerCase() !== currentStatus.toLowerCase());
 
     return (
-        <div ref={menuRef} className="kanban-status-menu" onClick={(e) => e.stopPropagation()}>
-            <div className="kanban-status-menu-title">Move to</div>
+        <div ref={menuRef} className="kanban-status-menu" style={{ backgroundColor: '#ffffff', color: '#1e293b', border: '1px solid #e2e8f0', zIndex: 9999 }} onClick={(e) => e.stopPropagation()}>
+            <div className="kanban-status-menu-title" style={{ color: '#64748b' }}>Move to</div>
             {allOptions.map((opt) => (
                 <button
                     key={opt.key}
                     className="kanban-status-menu-item"
+                    style={{ backgroundColor: 'transparent', color: '#1e293b' }}
                     onClick={(e) => {
                         e.stopPropagation();
                         onStatusChange(app.id, opt.key);
