@@ -14,10 +14,10 @@ import { showToast } from '../components/Toast';
 import EmptyState from '../components/EmptyState';
 
 const typeEmoji = {
-    follow_up: '📬',
-    deadline: '⏰',
-    interview: '🎤',
-    general: '📌',
+    'Follow-up': '📬',
+    Deadline: '⏰',
+    Interview: '🎤',
+    General: '📌',
 };
 
 function timeFromNow(date) {
@@ -37,7 +37,7 @@ export default function Reminders() {
     const [loading, setLoading] = useState(true);
     const [tab, setTab] = useState('pending');
     const [showModal, setShowModal] = useState(false);
-    const [form, setForm] = useState({ title: '', description: '', reminder_type: 'general', remind_at: '', application_id: '' });
+    const [form, setForm] = useState({ title: '', description: '', reminder_type: 'General', remind_at: '', application_id: '' });
     const [saving, setSaving] = useState(false);
 
     useEffect(() => { load(); }, [tab]);
@@ -85,7 +85,7 @@ export default function Reminders() {
             await createReminder(payload);
             showToast('Reminder created', 'success');
             setShowModal(false);
-            setForm({ title: '', description: '', reminder_type: 'general', remind_at: '', application_id: '' });
+            setForm({ title: '', description: '', reminder_type: 'General', remind_at: '', application_id: '' });
             setTab('pending');
             load();
         } catch (err) { showToast(err.message, 'error'); }
@@ -188,10 +188,10 @@ export default function Reminders() {
                         <div className="form-group">
                             <label>Type</label>
                             <select value={form.reminder_type} onChange={(e) => setForm({ ...form, reminder_type: e.target.value })}>
-                                <option value="general">📌 General</option>
-                                <option value="follow_up">📬 Follow-up</option>
-                                <option value="deadline">⏰ Deadline</option>
-                                <option value="interview">🎤 Interview</option>
+                                <option value="General">📌 General</option>
+                                <option value="Follow-up">📬 Follow-up</option>
+                                <option value="Deadline">⏰ Deadline</option>
+                                <option value="Interview">🎤 Interview</option>
                             </select>
                         </div>
                         <div className="form-group">

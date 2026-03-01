@@ -9,7 +9,6 @@ import {
     ExternalLink,
     CheckCircle,
     XCircle,
-    Ghost,
     Lightbulb,
     Target,
     AlertTriangle,
@@ -38,7 +37,13 @@ import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';
 import { showToast } from '../components/Toast';
 
-const OUTCOME_STATUSES = ['Offered', 'Rejected', 'Ghosted', 'Withdrawn'];
+const OUTCOME_STATUSES = ['Offer', 'Rejected', 'Closed'];
+
+const SOURCE_OPTIONS = [
+    'LinkedIn', 'Indeed', 'Glassdoor', 'Company Website',
+    'Referral', 'Job Board', 'Recruiter', 'Networking',
+    'Career Fair', 'Other',
+];
 
 export default function ApplicationDetail() {
     const { id } = useParams();
@@ -53,7 +58,7 @@ export default function ApplicationDetail() {
 
     const [editForm, setEditForm] = useState({});
     const [stageForm, setStageForm] = useState({ stage_name: '', stage_date: '', notes: '' });
-    const [outcomeForm, setOutcomeForm] = useState({ status: 'Offered', rejection_reason: '', notes: '' });
+    const [outcomeForm, setOutcomeForm] = useState({ status: 'Offer', notes: '' });
     const [reflectionForm, setReflectionForm] = useState({
         what_worked: '', what_failed: '', skill_gaps: '', improvement_plan: ''
     });
@@ -202,7 +207,12 @@ export default function ApplicationDetail() {
             const payload = { ...reflectionForm };
             if (!payload.what_worked) delete payload.what_worked;
             if (!payload.what_failed) delete payload.what_failed;
-            if (!payload.skill_gaps) delete payload.skill_gaps;
+            if (!payload.skill_gaps) {
+                delete payload.skill_gaps;
+            } else {
+                // Backend expects jsonb — wrap the string in an object
+                payload.skill_gaps = { notes: payload.skill_gaps };
+            }
             if (!payload.improvement_plan) delete payload.improvement_plan;
             await createReflection(id, payload);
             showToast('Reflection saved!');
@@ -295,7 +305,7 @@ export default function ApplicationDetail() {
                 <Tag size={14} className="text-slate-400 shrink-0" />
                 {appTags.map((t) => (
                     <span key={t.tag_id || t.id} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-200">
-                        {t.tag_name || t.name}
+                        {t.tag?.name || t.name}
                         <button onClick={() => handleRemoveTag(t.tag_id || t.id)} className="text-indigo-400 hover:text-red-500"><X size={12} /></button>
                     </span>
                 ))}
@@ -391,10 +401,10 @@ export default function ApplicationDetail() {
                         {app.outcome ? (
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2 text-base font-bold">
-                                    {app.outcome.status?.toLowerCase() === 'offered' && <CheckCircle size={20} className="text-emerald-500" />}
+                                    {app.outcome.status?.toLowerCase() === 'offer' && <CheckCircle size={20} className="text-emerald-500" />}
                                     {app.outcome.status?.toLowerCase() === 'rejected' && <XCircle size={20} className="text-red-500" />}
-                                    {app.outcome.status?.toLowerCase() === 'ghosted' && <Ghost size={20} className="text-gray-400" />}
-                                    {!['offered', 'rejected', 'ghosted'].includes(app.outcome.status?.toLowerCase()) && <AlertTriangle size={20} className="text-amber-500" />}
+                                    {app.outcome.status?.toLowerCase() === 'closed' && <AlertTriangle size={20} className="text-slate-400" />}
+                                    {!['offer', 'rejected', 'closed'].includes(app.outcome.status?.toLowerCase()) && <AlertTriangle size={20} className="text-amber-500" />}
                                     <span className="text-slate-800">{app.outcome.status}</span>
                                 </div>
                                 {app.outcome.rejection_reason && (
@@ -485,12 +495,17 @@ export default function ApplicationDetail() {
                     <div className="form-row">
                         <div className="form-group">
                             <label>Source</label>
-                            <input type="text" value={editForm.applied_source || ''} onChange={(e) => setEditForm({ ...editForm, applied_source: e.target.value })} />
+                            <select value={editForm.applied_source || ''} onChange={(e) => setEditForm({ ...editForm, applied_source: e.target.value })}>
+                                <option value="">Select source</option>
+                                {SOURCE_OPTIONS.map((s) => (
+                                    <option key={s} value={s}>{s}</option>
+                                ))}
+                            </select>
                         </div>
                         <div className="form-group">
                             <label>Status</label>
                             <select value={editForm.status || ''} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}>
-                                {['Applied', 'Interview', 'Offered', 'Rejected', 'Ghosted', 'Accepted', 'Declined', 'Withdrawn'].map((s) => (
+                                {['Open', 'Applied', 'Shortlisted', 'Interview', 'Offer', 'Rejected', 'Closed'].map((s) => (
                                     <option key={s} value={s}>{s}</option>
                                 ))}
                             </select>
@@ -560,12 +575,7 @@ export default function ApplicationDetail() {
                             ))}
                         </select>
                     </div>
-                    {outcomeForm.status === 'Rejected' && (
-                        <div className="form-group">
-                            <label>Rejection Reason</label>
-                            <input type="text" placeholder="e.g. Not enough experience" value={outcomeForm.rejection_reason} onChange={(e) => setOutcomeForm({ ...outcomeForm, rejection_reason: e.target.value })} />
-                        </div>
-                    )}
+
                     <div className="form-group">
                         <label>Notes</label>
                         <textarea rows={3} placeholder="Any additional notes..." value={outcomeForm.notes} onChange={(e) => setOutcomeForm({ ...outcomeForm, notes: e.target.value })} />

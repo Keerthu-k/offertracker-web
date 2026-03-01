@@ -21,13 +21,13 @@ import StatusBadge from '../components/StatusBadge';
 import SankeyChart from '../components/SankeyChart';
 
 const statusColors = {
-    Saved: 'bg-slate-100 text-slate-600',
+    Open: 'bg-violet-100 text-violet-700',
     Applied: 'bg-blue-100 text-blue-700',
-    Interviewing: 'bg-amber-100 text-amber-700',
+    Shortlisted: 'bg-sky-100 text-sky-700',
+    Interview: 'bg-amber-100 text-amber-700',
     Offer: 'bg-emerald-100 text-emerald-700',
-    Accepted: 'bg-teal-100 text-teal-700',
     Rejected: 'bg-red-100 text-red-600',
-    Withdrawn: 'bg-purple-100 text-purple-700',
+    Closed: 'bg-slate-100 text-slate-600',
 };
 
 export default function Dashboard() {
@@ -267,7 +267,7 @@ export default function Dashboard() {
                             </h2>
                             <button
                                 className="text-xs text-indigo-600 font-medium flex items-center gap-1 hover:text-indigo-800 transition-colors"
-                                onClick={() => navigate('/applications')}
+                                onClick={() => navigate('/reminders')}
                             >
                                 All <ArrowRight size={12} />
                             </button>
