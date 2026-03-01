@@ -48,13 +48,18 @@ async function request(url, options = {}) {
   const response = await fetch(`${API_BASE}${url}`, config);
 
   if (!response.ok) {
+    // Only treat /users/me 401 as a definitive "session expired" signal
+    if (response.status === 401 && url === '/users/me') {
+      clearToken();
+    }
+
     const errorData = await response.json().catch(() => ({}));
     const message =
       typeof errorData.detail === 'string'
         ? errorData.detail
         : Array.isArray(errorData.detail)
-        ? errorData.detail.map((e) => e.msg).join(', ')
-        : `Request failed (${response.status})`;
+          ? errorData.detail.map((e) => e.msg).join(', ')
+          : `Request failed (${response.status})`;
     const err = new Error(message);
     err.status = response.status;
     err.data = errorData;

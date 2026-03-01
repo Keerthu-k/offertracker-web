@@ -35,8 +35,12 @@ function normalizeAuthPayload(payload) {
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(getStoredUser);
-  const [loading, setLoading] = useState(!!getToken());
+  const hasToken = !!getToken();
+  // Don't trust cached user when a token needs validation — keep user null
+  // until getMe() succeeds. This prevents child components from rendering
+  // and firing API calls with an expired token.
+  const [user, setUser] = useState(() => (hasToken ? null : getStoredUser()));
+  const [loading, setLoading] = useState(hasToken);
 
   useEffect(() => {
     const token = getToken();

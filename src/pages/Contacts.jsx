@@ -117,8 +117,8 @@ export default function Contacts() {
 
             <div className="flex items-center gap-3 mb-6">
                 <div className="relative flex-1 max-w-xs">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input type="text" placeholder="Search contacts..." className="pl-9 !rounded-xl"
+                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    <input type="text" placeholder="Search contacts..." className="!pl-10 !bg-white !border-slate-200 !rounded-xl"
                         value={search} onChange={(e) => setSearch(e.target.value)} />
                 </div>
                 <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="!w-auto !rounded-xl">
