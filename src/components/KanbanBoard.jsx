@@ -15,20 +15,11 @@ const COLUMNS = [
     { key: 'Closed', label: 'Closed', color: '#64748b' },
 ];
 
-/* Secondary statuses — shown via card menu, mapped to a display column */
-const SECONDARY_STATUSES = [
-    { key: 'Accepted', label: 'Accepted', color: '#14b8a6', displayIn: 'Offer' },
-    { key: 'Declined', label: 'Declined', color: '#f97316', displayIn: 'Offer' },
-    { key: 'Withdrawn', label: 'Withdrawn', color: '#a855f7', displayIn: 'Applied' },
-];
-
 /* Which column should a status appear under? */
 function getColumnKey(status) {
     const s = (status || 'Open').toLowerCase();
     const col = COLUMNS.find((c) => c.key.toLowerCase() === s);
-    if (col) return col.key;
-    const sec = SECONDARY_STATUSES.find((sc) => sc.key.toLowerCase() === s);
-    return sec ? sec.displayIn : 'Open';
+    return col ? col.key : 'Open';
 }
 
 function formatDate(dateStr) {
@@ -36,10 +27,7 @@ function formatDate(dateStr) {
     return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-/* Is this a secondary (non-column) status? */
-function isSecondary(status) {
-    return SECONDARY_STATUSES.some((s) => s.key.toLowerCase() === (status || '').toLowerCase());
-}
+
 
 /* ── Popover menu for status changes ─────────────────────── */
 function StatusMenu({ app, onStatusChange, onClose }) {
@@ -54,11 +42,10 @@ function StatusMenu({ app, onStatusChange, onClose }) {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [onClose]);
 
-    /* Build option list: main columns + secondary, minus current */
-    const allOptions = [
-        ...COLUMNS.map((c) => ({ key: c.key, label: c.label, color: c.color })),
-        ...SECONDARY_STATUSES.map((s) => ({ key: s.key, label: s.label, color: s.color })),
-    ].filter((o) => o.key.toLowerCase() !== currentStatus.toLowerCase());
+    /* Build option list: main columns minus current */
+    const allOptions = COLUMNS
+        .map((c) => ({ key: c.key, label: c.label, color: c.color }))
+        .filter((o) => o.key.toLowerCase() !== currentStatus.toLowerCase());
 
     return (
         <div ref={menuRef} className="kanban-status-menu" style={{ backgroundColor: '#ffffff', color: '#1e293b', border: '1px solid #e2e8f0', zIndex: 9999 }} onClick={(e) => e.stopPropagation()}>
@@ -224,12 +211,7 @@ export default function KanbanBoard({ applications, onStatusChange, search }) {
                                                 </button>
                                             </div>
                                             <p className="kanban-card-role">{app.role_title}</p>
-                                            {/* Badge for secondary statuses (Accepted, Declined, Withdrawn) */}
-                                            {isSecondary(app.status) && (
-                                                <div style={{ marginBottom: 4 }}>
-                                                    <StatusBadge status={app.status} />
-                                                </div>
-                                            )}
+
                                             <div className="kanban-card-meta">
                                                 {app.applied_date && (
                                                     <span className="kanban-card-meta-item">

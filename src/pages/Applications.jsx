@@ -22,14 +22,19 @@ import { showToast } from '../components/Toast';
 
 const STATUS_OPTIONS = [
     'All',
+    'Open',
     'Applied',
+    'Shortlisted',
     'Interview',
-    'Offered',
+    'Offer',
     'Rejected',
-    'Ghosted',
-    'Accepted',
-    'Declined',
-    'Withdrawn',
+    'Closed',
+];
+
+const SOURCE_OPTIONS = [
+    'LinkedIn', 'Indeed', 'Glassdoor', 'Company Website',
+    'Referral', 'Job Board', 'Recruiter', 'Networking',
+    'Career Fair', 'Other',
 ];
 
 const INITIAL_FORM = {
@@ -38,7 +43,7 @@ const INITIAL_FORM = {
     applied_source: '',
     url: '',
     description: '',
-    status: 'Applied',
+    status: 'Open',
     applied_date: '',
     resume_version_id: '',
     salary_min: '',
@@ -219,11 +224,10 @@ export default function Applications() {
                             {STATUS_OPTIONS.map((status) => (
                                 <button
                                     key={status}
-                                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap ${
-                                        statusFilter === status
+                                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap ${statusFilter === status
                                             ? 'bg-indigo-50 border-indigo-200 text-indigo-600'
                                             : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                                    }`}
+                                        }`}
                                     onClick={() => setStatusFilter(status)}
                                 >
                                     {status}
@@ -362,14 +366,17 @@ export default function Applications() {
                     <div className="form-row">
                         <div className="form-group">
                             <label>Source</label>
-                            <input
-                                type="text"
-                                placeholder="e.g. LinkedIn, Referral"
+                            <select
                                 value={formData.applied_source}
                                 onChange={(e) =>
                                     setFormData({ ...formData, applied_source: e.target.value })
                                 }
-                            />
+                            >
+                                <option value="">Select source</option>
+                                {SOURCE_OPTIONS.map((s) => (
+                                    <option key={s} value={s}>{s}</option>
+                                ))}
+                            </select>
                         </div>
                         <div className="form-group">
                             <label>Status</label>

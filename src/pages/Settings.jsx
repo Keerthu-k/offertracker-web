@@ -93,9 +93,11 @@ export default function SettingsPage() {
                         <label className="flex items-center gap-1.5">
                             <Shield size={14} className="text-slate-400" /> Profile Visibility
                         </label>
-                        <div className="flex gap-3">
+                        <div className="flex gap-3 flex-wrap">
                             {[
                                 { value: 'public', label: 'Public', desc: 'Anyone can see your profile', icon: Eye },
+                                { value: 'followers', label: 'Followers', desc: 'Only followers can see your profile', icon: Eye },
+                                { value: 'groups', label: 'Groups', desc: 'Only group members can see your profile', icon: Eye },
                                 { value: 'private', label: 'Private', desc: 'Only you can see your profile', icon: EyeOff },
                             ].map(({ value, label, desc, icon: Icon }) => (
                                 <button key={value} type="button"
@@ -103,7 +105,7 @@ export default function SettingsPage() {
                                     className={`flex-1 flex items-center gap-3 p-4 rounded-xl border transition-all ${form.profile_visibility === value
                                         ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
                                         : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
-                                    }`}
+                                        }`}
                                 >
                                     <Icon size={18} />
                                     <div className="text-left">

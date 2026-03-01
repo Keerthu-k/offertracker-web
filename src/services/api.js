@@ -1,4 +1,5 @@
-const API_BASE = 'http://127.0.0.1:8000/api/v1';
+// Fallback to localhost if env var is missing during dev
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000/api/v1';
 
 // ── Token management ─────────────────────────────────────
 export function getToken() {
@@ -54,12 +55,28 @@ async function request(url, options = {}) {
     }
 
     const errorData = await response.json().catch(() => ({}));
-    const message =
-      typeof errorData.detail === 'string'
-        ? errorData.detail
-        : Array.isArray(errorData.detail)
-          ? errorData.detail.map((e) => e.msg).join(', ')
-          : `Request failed (${response.status})`;
+    let message = `Request failed (${response.status})`;
+
+    if (errorData.detail && typeof errorData.detail === 'string') {
+      message = errorData.detail;
+
+      if (errorData.errors && Array.isArray(errorData.errors)) {
+        const validationMsgs = errorData.errors
+          .map((e) => `${e.field}: ${e.message}`)
+          .join(', ');
+        if (validationMsgs) {
+          message = `${message} - ${validationMsgs}`;
+        }
+      }
+
+      if (errorData.error_id) {
+        message = `${message} (Error ID: ${errorData.error_id})`;
+      }
+    } else if (errorData.detail && Array.isArray(errorData.detail)) {
+      message = errorData.detail.map((e) => e.msg).join(', ');
+    } else if (errorData.detail) {
+      message = String(errorData.detail);
+    }
     const err = new Error(message);
     err.status = response.status;
     err.data = errorData;
