@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
     Plus,
     FileText,
@@ -10,7 +10,8 @@ import {
     Trash2,
     Upload,
 } from 'lucide-react';
-import { getResumes, createResume, updateResume, deleteResume, uploadResumeFile } from '../services/api';
+import { createResume, updateResume, deleteResume, uploadResumeFile } from '../services/api';
+import { useAppData } from '../contexts/AppContext';
 import Modal from '../components/Modal';
 import EmptyState from '../components/EmptyState';
 import { showToast } from '../components/Toast';
@@ -18,28 +19,12 @@ import { showToast } from '../components/Toast';
 const INITIAL_FORM = { version_name: '', notes: '', file_url: '' };
 
 export default function Resumes() {
-    const [resumes, setResumes] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { resumes, loading, refreshResumes } = useAppData();
     const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState(INITIAL_FORM);
     const [submitting, setSubmitting] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [editData, setEditData] = useState({});
-
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    async function loadData() {
-        try {
-            const data = await getResumes();
-            setResumes(data);
-        } catch {
-            setResumes([]);
-        } finally {
-            setLoading(false);
-        }
-    }
 
     async function handleCreate(e) {
         e.preventDefault();
@@ -53,7 +38,7 @@ export default function Resumes() {
             showToast('Resume version created!');
             setShowForm(false);
             setFormData(INITIAL_FORM);
-            loadData();
+            refreshResumes();
         } catch (err) {
             showToast(err.message || 'Failed to create resume', 'error');
         } finally {
@@ -79,7 +64,7 @@ export default function Resumes() {
             await updateResume(editingId, payload);
             showToast('Resume updated!');
             setEditingId(null);
-            loadData();
+            refreshResumes();
         } catch (err) {
             showToast(err.message || 'Update failed', 'error');
         } finally {
@@ -92,7 +77,7 @@ export default function Resumes() {
         try {
             await deleteResume(id);
             showToast('Resume deleted');
-            loadData();
+            refreshResumes();
         } catch (err) {
             showToast(err.message || 'Delete failed', 'error');
         }
@@ -104,7 +89,7 @@ export default function Resumes() {
         try {
             await uploadResumeFile(resumeId, file);
             showToast('File uploaded!');
-            loadData();
+            refreshResumes();
         } catch (err) {
             showToast(err.message || 'Upload failed', 'error');
         }

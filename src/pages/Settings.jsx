@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
     User,
     Save,
@@ -6,34 +6,18 @@ import {
     EyeOff,
     Shield,
 } from 'lucide-react';
-import { getMe, updateMe } from '../services/api';
+import { updateMe } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { showToast } from '../components/Toast';
 
 export default function SettingsPage() {
     const { user, refreshUser } = useAuth();
     const [form, setForm] = useState({
-        display_name: '',
-        bio: '',
-        profile_visibility: 'public',
+        display_name: user?.display_name || '',
+        bio: user?.bio || '',
+        profile_visibility: user?.profile_visibility || 'public',
     });
-    const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-
-    useEffect(() => {
-        async function loadProfile() {
-            try {
-                const data = await getMe();
-                setForm({
-                    display_name: data.display_name || '',
-                    bio: data.bio || '',
-                    profile_visibility: data.profile_visibility || 'public',
-                });
-            } catch { /* empty */ }
-            finally { setLoading(false); }
-        }
-        loadProfile();
-    }, []);
 
     async function handleSave(e) {
         e.preventDefault();
@@ -46,13 +30,6 @@ export default function SettingsPage() {
         finally { setSaving(false); }
     }
 
-    if (loading) {
-        return (
-            <div className="page-enter flex justify-center py-20">
-                <div className="w-8 h-8 border-[3px] border-indigo-100 border-t-indigo-500 rounded-full animate-spin" />
-            </div>
-        );
-    }
 
     return (
         <div className="page-enter max-w-2xl">

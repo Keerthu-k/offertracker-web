@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+import { AppProvider } from './contexts/AppContext';
 import Sidebar from './components/Sidebar';
 import ToastContainer from './components/Toast';
 import Dashboard from './pages/Dashboard';
@@ -63,26 +64,28 @@ function App() {
   // Authenticated shell
   return (
     <ProtectedRoute>
-      <div className="flex min-h-screen bg-slate-50">
-        <Sidebar />
-        <main className="flex-1 ml-[72px] py-6 px-6 lg:px-10 xl:px-14">
-          <Routes>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/applications" element={<Applications />} />
-            <Route path="/applications/:id" element={<ApplicationDetail />} />
-            <Route path="/resumes" element={<Resumes />} />
-            <Route path="/saved-jobs" element={<SavedJobs />} />
-            <Route path="/contacts" element={<Contacts />} />
-            <Route path="/reminders" element={<Reminders />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/progress" element={<Progress />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/profile" element={<SettingsPage />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </main>
-        <ToastContainer />
-      </div>
+      <AppProvider>
+        <div className="flex min-h-screen bg-slate-50">
+          <Sidebar />
+          <main className="flex-1 ml-[72px] py-6 px-6 lg:px-10 xl:px-14">
+            <Routes>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/applications" element={<Applications />} />
+              <Route path="/applications/:id" element={<ApplicationDetail />} />
+              <Route path="/resumes" element={<Resumes />} />
+              <Route path="/saved-jobs" element={<SavedJobs />} />
+              <Route path="/contacts" element={<Contacts />} />
+              <Route path="/reminders" element={<Reminders />} />
+              <Route path="/community" element={<Community />} />
+              <Route path="/progress" element={<Progress />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/profile" element={<SettingsPage />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </main>
+          <ToastContainer />
+        </div>
+      </AppProvider>
     </ProtectedRoute>
   );
 }

@@ -9,6 +9,7 @@ import {
     Trash2,
 } from 'lucide-react';
 import { getReminders, getUpcomingReminders, createReminder, deleteReminder, completeReminder } from '../services/api';
+import { useAppData } from '../contexts/AppContext';
 import Modal from '../components/Modal';
 import { showToast } from '../components/Toast';
 import EmptyState from '../components/EmptyState';
@@ -33,28 +34,30 @@ function timeFromNow(date) {
 }
 
 export default function Reminders() {
-    const [reminders, setReminders] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { reminders: contextReminders, refreshReminders } = useAppData();
+    const [localReminders, setLocalReminders] = useState(null);
+    const [loading, setLoading] = useState(false);
     const [tab, setTab] = useState('pending');
     const [showModal, setShowModal] = useState(false);
     const [form, setForm] = useState({ title: '', description: '', reminder_type: 'General', remind_at: '', application_id: '' });
     const [saving, setSaving] = useState(false);
+
+    // Use local reminders when set (for completed tab), otherwise use context
+    const reminders = localReminders !== null ? localReminders : contextReminders;
 
     useEffect(() => { load(); }, [tab]);
 
     async function load() {
         setLoading(true);
         try {
-            let data;
             if (tab === 'pending') {
-                data = await getUpcomingReminders(100);
+                setLocalReminders(null); // use context data
+                await refreshReminders({ upcoming: true });
             } else {
-                data = await getReminders({ is_completed: true });
+                const data = await getReminders({ is_completed: true });
+                setLocalReminders(data);
             }
-            // Sort pending by remind_at ascending
-            if (tab === 'pending') data.sort((a, b) => new Date(a.remind_at) - new Date(b.remind_at));
-            setReminders(data);
-        } catch { setReminders([]); }
+        } catch { if (tab !== 'pending') setLocalReminders([]); }
         finally { setLoading(false); }
     }
 

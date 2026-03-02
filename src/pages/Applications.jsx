@@ -13,7 +13,8 @@ import {
     Trash2,
     DollarSign,
 } from 'lucide-react';
-import { getApplications, createApplication, updateApplication, deleteApplication, getResumes } from '../services/api';
+import { createApplication, updateApplication, deleteApplication } from '../services/api';
+import { useAppData } from '../contexts/AppContext';
 import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';
 import EmptyState from '../components/EmptyState';
@@ -51,9 +52,7 @@ const INITIAL_FORM = {
 };
 
 export default function Applications() {
-    const [applications, setApplications] = useState([]);
-    const [resumes, setResumes] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { applications, resumes, loading, refreshApplications, setApplications } = useAppData();
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     const [formData, setFormData] = useState(INITIAL_FORM);
@@ -67,10 +66,6 @@ export default function Applications() {
     const autoOpen = searchParams.get('new') === 'true';
     const [showForm, setShowForm] = useState(autoOpen);
 
-    useEffect(() => {
-        loadData();
-    }, []);
-
     /* Strip the ?new param from the URL (cosmetic, doesn't trigger re-render of modal) */
     useEffect(() => {
         if (autoOpen) {
@@ -81,19 +76,6 @@ export default function Applications() {
         // Run only on mount
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    async function loadData() {
-        try {
-            const [apps, res] = await Promise.all([
-                getApplications().catch(() => []),
-                getResumes().catch(() => []),
-            ]);
-            setApplications(apps);
-            setResumes(res);
-        } finally {
-            setLoading(false);
-        }
-    }
 
     const filtered = applications.filter((app) => {
         const matchSearch =
@@ -116,7 +98,7 @@ export default function Applications() {
             showToast(`Moved to ${newStatus}`);
         } catch (err) {
             // Revert on failure
-            loadData();
+            refreshApplications();
             showToast(err.message || 'Failed to update status', 'error');
         }
     }
@@ -140,7 +122,7 @@ export default function Applications() {
             showToast('Application created successfully!');
             setShowForm(false);
             setFormData(INITIAL_FORM);
-            loadData();
+            refreshApplications();
         } catch (err) {
             showToast(err.message || 'Failed to create application', 'error');
         } finally {
@@ -225,8 +207,8 @@ export default function Applications() {
                                 <button
                                     key={status}
                                     className={`px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap ${statusFilter === status
-                                            ? 'bg-indigo-50 border-indigo-200 text-indigo-600'
-                                            : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700'
+                                        ? 'bg-indigo-50 border-indigo-200 text-indigo-600'
+                                        : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700'
                                         }`}
                                     onClick={() => setStatusFilter(status)}
                                 >

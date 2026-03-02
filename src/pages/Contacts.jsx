@@ -11,6 +11,7 @@ import {
     Edit3,
 } from 'lucide-react';
 import { getContacts, createContact, updateContact, deleteContact } from '../services/api';
+import { useAppData } from '../contexts/AppContext';
 import Modal from '../components/Modal';
 import { showToast } from '../components/Toast';
 import EmptyState from '../components/EmptyState';
@@ -32,8 +33,8 @@ const emptyForm = {
 };
 
 export default function Contacts() {
-    const [contacts, setContacts] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { contacts, loading: globalLoading, refreshContacts, setContacts } = useAppData();
+    const [localLoading, setLocalLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState(null);
     const [form, setForm] = useState(emptyForm);
@@ -41,16 +42,19 @@ export default function Contacts() {
     const [filterType, setFilterType] = useState('');
     const [saving, setSaving] = useState(false);
 
-    useEffect(() => { loadContacts(); }, [filterType]);
+    const loading = globalLoading || localLoading;
 
-    async function loadContacts() {
-        setLoading(true);
-        try {
-            const data = await getContacts({ contact_type: filterType || undefined });
-            setContacts(data);
-        } catch { setContacts([]); }
-        finally { setLoading(false); }
-    }
+    useEffect(() => {
+        if (filterType) {
+            setLocalLoading(true);
+            getContacts({ contact_type: filterType })
+                .then(setContacts)
+                .catch(() => { })
+                .finally(() => setLocalLoading(false));
+        } else {
+            refreshContacts();
+        }
+    }, [filterType]);
 
     function openCreate() {
         setEditing(null);
@@ -82,7 +86,7 @@ export default function Contacts() {
                 showToast('Contact added', 'success');
             }
             setShowModal(false);
-            loadContacts();
+            refreshContacts({ contact_type: filterType || undefined });
         } catch (err) { showToast(err.message, 'error'); }
         finally { setSaving(false); }
     }
@@ -92,7 +96,7 @@ export default function Contacts() {
         try {
             await deleteContact(id);
             showToast('Deleted', 'success');
-            loadContacts();
+            refreshContacts({ contact_type: filterType || undefined });
         } catch (err) { showToast(err.message, 'error'); }
     }
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Briefcase,
@@ -15,8 +15,8 @@ import {
     BarChart3,
     Zap,
 } from 'lucide-react';
-import { getApplications, getDashboardAnalytics, getUpcomingReminders, getMyStats } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { useAppData } from '../contexts/AppContext';
 import StatusBadge from '../components/StatusBadge';
 import SankeyChart from '../components/SankeyChart';
 
@@ -31,36 +31,9 @@ const statusColors = {
 };
 
 export default function Dashboard() {
-    const [applications, setApplications] = useState([]);
-    const [analytics, setAnalytics] = useState(null);
-    const [reminders, setReminders] = useState([]);
-    const [stats, setStats] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const { applications, analytics, reminders, stats, loading } = useAppData();
     const navigate = useNavigate();
     const { user } = useAuth();
-
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    async function loadData() {
-        try {
-            const [apps, analyticsData, remindersData, statsData] = await Promise.allSettled([
-                getApplications(),
-                getDashboardAnalytics(),
-                getUpcomingReminders(5),
-                getMyStats(),
-            ]);
-            setApplications(apps.status === 'fulfilled' ? apps.value : []);
-            setAnalytics(analyticsData.status === 'fulfilled' ? analyticsData.value : null);
-            setReminders(remindersData.status === 'fulfilled' ? remindersData.value : []);
-            setStats(statsData.status === 'fulfilled' ? statsData.value : null);
-        } catch {
-            /* handled by allSettled */
-        } finally {
-            setLoading(false);
-        }
-    }
 
     const recentApps = [...applications]
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
@@ -274,7 +247,7 @@ export default function Dashboard() {
                         </div>
                         {reminders.length > 0 ? (
                             <div className="space-y-2">
-                                {reminders.map((r) => (
+                                {reminders.slice(0, 5).map((r) => (
                                     <div key={r.id} className="flex items-start gap-2 py-1.5">
                                         <div className="w-2 h-2 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
                                         <div className="min-w-0">

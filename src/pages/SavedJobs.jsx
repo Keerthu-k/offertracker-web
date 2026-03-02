@@ -18,6 +18,7 @@ import {
     deleteSavedJob,
     convertSavedJob,
 } from '../services/api';
+import { useAppData } from '../contexts/AppContext';
 import Modal from '../components/Modal';
 import { showToast } from '../components/Toast';
 import EmptyState from '../components/EmptyState';
@@ -34,8 +35,9 @@ const excitementStars = (level) =>
     ));
 
 export default function SavedJobs() {
-    const [jobs, setJobs] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { savedJobs: contextJobs, refreshSavedJobs, setSavedJobs } = useAppData();
+    const [localJobs, setLocalJobs] = useState(null);
+    const [loading, setLoading] = useState(false);
     const [showCreate, setShowCreate] = useState(false);
     const [filter, setFilter] = useState('Active');
     const [search, setSearch] = useState('');
@@ -43,16 +45,22 @@ export default function SavedJobs() {
     const [saving, setSaving] = useState(false);
     const navigate = useNavigate();
 
-    useEffect(() => { loadJobs(); }, [filter]);
+    const jobs = localJobs !== null ? localJobs : contextJobs;
 
-    async function loadJobs() {
+    useEffect(() => {
         setLoading(true);
-        try {
-            const data = await getSavedJobs({ status: filter !== 'All' ? filter : undefined });
-            setJobs(data);
-        } catch { setJobs([]); }
-        finally { setLoading(false); }
-    }
+        getSavedJobs({ status: filter !== 'All' ? filter : undefined })
+            .then((data) => {
+                if (filter === 'Active') {
+                    setSavedJobs(data); // update context for default view
+                    setLocalJobs(null);
+                } else {
+                    setLocalJobs(data);
+                }
+            })
+            .catch(() => { if (filter !== 'Active') setLocalJobs([]); })
+            .finally(() => setLoading(false));
+    }, [filter]);
 
     async function handleCreate(e) {
         e.preventDefault();
@@ -63,7 +71,7 @@ export default function SavedJobs() {
             showToast('Job saved!', 'success');
             setShowCreate(false);
             setForm({ company_name: '', role_title: '', url: '', location: '', priority: 'Medium', notes: '', excitement_level: 3 });
-            loadJobs();
+            refreshSavedJobs();
         } catch (err) { showToast(err.message, 'error'); }
         finally { setSaving(false); }
     }
@@ -81,7 +89,7 @@ export default function SavedJobs() {
         try {
             await deleteSavedJob(id);
             showToast('Deleted', 'success');
-            loadJobs();
+            refreshSavedJobs();
         } catch (err) { showToast(err.message, 'error'); }
     }
 
@@ -89,7 +97,7 @@ export default function SavedJobs() {
         try {
             await updateSavedJob(id, { status: 'Archived' });
             showToast('Archived', 'success');
-            loadJobs();
+            refreshSavedJobs();
         } catch (err) { showToast(err.message, 'error'); }
     }
 
