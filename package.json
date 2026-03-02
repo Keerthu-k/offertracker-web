@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@marsidev/react-turnstile": "^1.4.2",
     "@tailwindcss/vite": "^4.2.1",
     "d3-array": "^3.2.4",
     "d3-sankey": "^0.12.3",

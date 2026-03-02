@@ -67,8 +67,8 @@ export function AuthProvider({ children }) {
     return user;
   }, []);
 
-  const registerFn = useCallback(async ({ email, username, password, display_name }) => {
-    const res = await authRegister({ email, username, password, display_name });
+  const registerFn = useCallback(async ({ email, username, password, display_name, turnstileToken }) => {
+    const res = await authRegister({ email, username, password, display_name, turnstileToken });
     const { accessToken, user } = normalizeAuthPayload(res);
     setToken(accessToken);
     setStoredUser(user);

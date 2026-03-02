@@ -12,6 +12,7 @@ import {
   AtSign,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { Turnstile } from '@marsidev/react-turnstile';
 import './Auth.css';
 
 export default function Signup() {
@@ -19,6 +20,7 @@ export default function Signup() {
   const { register } = useAuth();
   const [form, setForm] = useState({ display_name: '', username: '', email: '', password: '' });
   const [showPw, setShowPw] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -29,6 +31,7 @@ export default function Signup() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+
     if (!form.username || !form.email || !form.password) {
       setError('Please fill in all required fields.');
       return;
@@ -38,7 +41,11 @@ export default function Signup() {
       return;
     }
     if (form.password.length < 6) {
-      setError('Password must be at least 6 characters.');
+      setError('Password must be at least 8 characters.');
+      return;
+    }
+    if (!turnstileToken) {
+      setError('Please complete the CAPTCHA verification.');
       return;
     }
     setLoading(true);
@@ -48,6 +55,7 @@ export default function Signup() {
         username: form.username,
         password: form.password,
         display_name: form.display_name || null,
+        turnstileToken,
       });
       navigate('/dashboard');
     } catch (err) {
@@ -137,7 +145,7 @@ export default function Signup() {
                 id="password"
                 name="password"
                 type={showPw ? 'text' : 'password'}
-                placeholder="Min. 6 characters"
+                placeholder="Min. 8 characters"
                 value={form.password}
                 onChange={handleChange}
                 autoComplete="new-password"
@@ -151,6 +159,13 @@ export default function Signup() {
                 {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
+          </div>
+
+          <div className="field" style={{ display: 'flex', justifyContent: 'center', margin: '1rem 0' }}>
+            <Turnstile
+              siteKey="0x4AAAAAACk8bB8W7vwuOnTd"
+              onSuccess={(token) => setTurnstileToken(token)}
+            />
           </div>
 
           <button type="submit" className="auth-submit" disabled={loading}>
