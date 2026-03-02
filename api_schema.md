@@ -112,7 +112,7 @@ Log in and receive a Supabase session JWT.
 | Field | Type | Required |
 |-------|------|----------|
 | `email` | `string` | **Yes** |
-| `password` | `string` | **Yes** (min 6 chars) |
+| `password` | `string` | **Yes** (min 8 chars) |
 
 #### Response — `200`
 
