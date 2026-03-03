@@ -103,7 +103,7 @@ export default function Landing() {
           <div className="footer-links">
             <a href="https://github.com/Keerthu-k/offertracker-backend" target="_blank" rel="noopener noreferrer">Backend</a>
             <span className="footer-divider">&middot;</span>
-            <a href="https://github.com/Keerthu-k/offertracker-web" target="_blank" rel="noopener noreferrer">Star on GitHub</a>
+            <a href="https://github.com/Keerthu-k/offertracker" target="_blank" rel="noopener noreferrer">Star on GitHub</a>
           </div>
         </div>
       </footer>

@@ -55,7 +55,7 @@ The frontend is a modern, responsive Single Page Application (SPA) designed with
 
 1. **Clone the repository** and navigate to the project directory:
    ```bash
-   git clone https://github.com/Keerthu-k/offertracker-web.git
+   git clone https://github.com/Keerthu-k/offertracker.git
    cd "OfferTracker Web"
    ```
 
